@@ -12,6 +12,14 @@ import dj_database_url
 from dotenv import load_dotenv
 
 
+def _csv_env(name: str, default: list[str]) -> list[str]:
+    raw = os.environ.get(name, "")
+    if not raw.strip():
+        return default
+    values = [v.strip() for v in raw.split(",")]
+    return [v for v in values if v]
+
+
 def _normalize_database_url(url: str) -> str:
     """Codifica usuario y contraseña en la URL para que sea 100% ASCII (evita UnicodeDecodeError en psycopg2/libpq en Windows)."""
     if not url or "postgres" not in url.lower():
@@ -59,7 +67,10 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-change-in-production")
 
 DEBUG = os.environ.get("DEBUG", "True").lower() in ("true", "1", "yes")
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+if not DEBUG and SECRET_KEY == "dev-secret-change-in-production":
+    raise RuntimeError("SECRET_KEY must be set in production.")
+
+ALLOWED_HOSTS = _csv_env("ALLOWED_HOSTS", ["localhost", "127.0.0.1"])
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -78,6 +89,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
@@ -164,17 +176,32 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"] if (BASE_DIR / "static").exists() else []
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# CORS: localhost:3000 (Next.js)
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+}
+
+# CORS / CSRF (Next.js frontend)
+CORS_ALLOWED_ORIGINS = _csv_env(
+    "CORS_ALLOWED_ORIGINS",
+    ["http://localhost:3000", "http://127.0.0.1:3000"],
+)
+CSRF_TRUSTED_ORIGINS = _csv_env(
+    "CSRF_TRUSTED_ORIGINS",
+    ["http://localhost:3000", "http://127.0.0.1:3000"],
+)
+
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 # URL del frontend (portfolio). El enlace "View site" del admin abre esta URL.
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000").rstrip("/")

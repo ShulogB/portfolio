@@ -39,6 +39,23 @@ Incluye tests del endpoint de contacto (`core.tests`).
 python manage.py runserver
 ```
 
+## Deploy rápido en Railway
+
+1. Crear proyecto en Railway y conectar el repo GitHub.
+2. Configurar **Root Directory** = `backend`.
+3. Agregar un servicio **PostgreSQL** (Railway setea `DATABASE_URL`).
+4. Variables requeridas:
+   - `DEBUG=False`
+   - `SECRET_KEY=<secreto-largo>`
+   - `ALLOWED_HOSTS=<tu-backend>.up.railway.app,api.shulo.dev`
+   - `FRONTEND_URL=https://shulo.dev`
+   - `REVALIDATION_SECRET=<mismo valor que frontend>`
+   - `CORS_ALLOWED_ORIGINS=https://shulo.dev,https://www.shulo.dev`
+   - `CSRF_TRUSTED_ORIGINS=https://shulo.dev,https://www.shulo.dev`
+5. En Deploy / Build & Start:
+   - Build: `pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate`
+   - Start: `gunicorn portfolio_api.wsgi:application --bind 0.0.0.0:$PORT`
+
 ## API
 
 - **Case studies**: `GET/POST /api/v1/case-studies/`, `GET/PUT/PATCH/DELETE /api/v1/case-studies/<slug>/`  
