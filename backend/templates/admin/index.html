@@ -1,0 +1,40 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'admin/css/dashboard.css' %}">
+<style>
+  .dashboard #content-main { padding: 0 !important; }
+  .dashboard .backoffice-welcome { font-family: 'Press Start 2P', monospace !important; font-size: 9px !important; letter-spacing: 0.1em !important; background: rgba(110, 184, 212, 0.06) !important; border: 1px solid var(--admin-border) !important; border-radius: 4px !important; padding: 0.85rem 1.25rem !important; margin-bottom: 1.5rem !important; color: var(--admin-text) !important; }
+  .dashboard-metrics { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 1.25rem !important; }
+  @media (max-width: 900px) { .dashboard-metrics { grid-template-columns: 1fr !important; } }
+  .metrics-module { background: var(--admin-surface) !important; border: 1px solid var(--admin-border) !important; border-radius: 6px !important; overflow: hidden !important; }
+  .metrics-module h2 { font-family: 'Press Start 2P', monospace !important; font-size: 8px !important; letter-spacing: 0.08em !important; background: transparent !important; border-bottom: 1px solid var(--admin-border) !important; color: var(--admin-cyan) !important; margin: 0 !important; padding: 0.75rem 1rem !important; }
+  .metrics-table { width: 100% !important; border-collapse: collapse !important; font-size: 13px !important; }
+  .metrics-table th, .metrics-table td { padding: 0.5rem 1rem !important; text-align: left !important; border-bottom: 1px solid var(--hairline-color) !important; color: var(--admin-text) !important; }
+  .metrics-table th { color: var(--admin-text-muted) !important; font-weight: 600 !important; }
+  .metrics-table a { color: var(--admin-cyan) !important; }
+  .metrics-footer { margin: 0 !important; padding: 0.5rem 1rem !important; font-size: 12px !important; }
+  .metrics-footer a { color: var(--admin-cyan-soft) !important; }
+  .metrics-empty { margin: 0 !important; padding: 1rem !important; color: var(--admin-text-muted) !important; font-size: 13px !important; }
+  .metrics-bars { padding: 0.75rem 1rem !important; }
+  .metrics-bar-row { display: flex !important; align-items: center !important; gap: 0.5rem !important; margin-bottom: 0.4rem !important; font-size: 12px !important; }
+  .metrics-bar-label { flex: 0 0 200px !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; color: var(--admin-text-muted) !important; }
+  .metrics-bar-wrap { flex: 1 !important; min-width: 60px !important; height: 8px !important; background: rgba(110, 184, 212, 0.15) !important; border-radius: 4px !important; overflow: hidden !important; }
+  .metrics-bar-fill { display: block !important; height: 100% !important; background: var(--admin-cyan) !important; border-radius: 4px !important; }
+  .metrics-bar-count { flex: 0 0 2rem !important; text-align: right !important; color: var(--admin-cyan) !important; font-weight: 600 !important; }
+</style>
+{% endblock %}
+
+{% block coltype %}colMS{% endblock %}
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+{% block nav-breadcrumbs %}{% endblock %}
+{% comment %}No bloqueamos nav-sidebar: se muestra el sidebar como en el resto del admin.{% endcomment %}
+
+{% block content %}
+<p class="backoffice-welcome">Bienvenido, {{ user.get_username }}</p>
+{% include "admin/dashboard_metrics.html" %}
+{% endblock %}
+
+{% block sidebar %}{% comment %}Sin "Acciones recientes".{% endcomment %}{% endblock %}

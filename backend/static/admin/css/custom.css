@@ -1,0 +1,760 @@
+/* Tema Sega 90s – minimalista, colores pastel para mejor legibilidad */
+
+:root {
+  --admin-bg: #0d1220;
+  --admin-surface: #161d2e;
+  /* Cyan más pastel (menos neón) */
+  --admin-cyan: #6eb8d4;
+  --admin-cyan-soft: #8ecce2;
+  --admin-cyan-dim: rgba(110, 184, 212, 0.5);
+  --admin-border: rgba(110, 184, 212, 0.22);
+  --admin-text: #e8f2f8;
+  --admin-text-muted: #9fb8cc;
+  /* Verde más pastel */
+  --admin-success: #6ec99e;
+  --admin-success-soft: #8ed9b4;
+  --admin-success-text: #0d1f16;
+  --admin-link: #6eb8d4;
+  /* Toast terminal: neón cyberpunk */
+  --admin-toast-neon: #00ff41;
+  --admin-toast-neon-dim: rgba(0, 255, 65, 0.6);
+  /* Sobrescribir variables del admin */
+  --body-bg: #0d1220;
+  --body-fg: #e8f2f8;
+  --selected-row: rgba(110, 184, 212, 0.1);
+  --header-bg: #161d2e;
+  --header-color: #e8f2f8;
+  --link-fg: #6eb8d4;
+  --darkened-bg: #121a2a;
+  --border-color: rgba(110, 184, 212, 0.22);
+  --hairline-color: rgba(110, 184, 212, 0.12);
+}
+
+/* Mensajes del admin: overlay + popup terminal/cyberpunk (neon verde, mono, borde sólido) */
+@keyframes admin-toast-blink {
+  0%, 100% { box-shadow: 0 0 0 0 var(--admin-toast-neon-dim); }
+  50% { box-shadow: 0 0 12px 2px var(--admin-toast-neon-dim); }
+}
+
+.admin-messages-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 99999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 1rem !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  transition: opacity 0.25s ease !important;
+}
+.admin-messages-overlay-hidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Toast tipo consola: fondo oscuro del dashboard, borde neón, fuente mono */
+.admin-messages-toast.admin-toast-terminal {
+  position: relative !important;
+  max-width: 420px !important;
+  width: 100% !important;
+  padding: 0 !important;
+  background: var(--admin-bg, #0d1220) !important;
+  border: 2px solid var(--admin-toast-neon) !important;
+  border-radius: 4px !important;
+  box-shadow: 0 0 0 1px var(--admin-toast-neon-dim), 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+  color: var(--admin-toast-neon) !important;
+  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace !important;
+  animation: admin-toast-blink 0.6s ease 2 !important;
+}
+.admin-toast-terminal-inner {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 0.75rem !important;
+  padding: 1rem 2.5rem 1rem 1rem !important;
+  text-align: left !important;
+}
+.admin-toast-icon {
+  flex-shrink: 0 !important;
+  color: var(--admin-toast-neon) !important;
+  font-size: 1rem !important;
+  font-weight: bold !important;
+  line-height: 1.4 !important;
+}
+.admin-messages-toast .messagelist {
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+  flex: 1 !important;
+}
+.admin-messages-toast .messagelist li {
+  background: transparent !important;
+  background-image: none !important;
+  color: var(--admin-toast-neon) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  line-height: 1.5 !important;
+  padding-left: 0 !important;
+  font-family: inherit !important;
+}
+.admin-messages-toast .messagelist li::before {
+  content: none !important;
+}
+/* Botón X: mismo estilo terminal, borde neón, discreto */
+.admin-messages-toast .admin-messages-close {
+  position: absolute !important;
+  top: 6px !important;
+  right: 6px !important;
+  width: 24px !important;
+  height: 24px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 1px solid var(--admin-toast-neon-dim) !important;
+  border-radius: 2px !important;
+  background: transparent !important;
+  color: var(--admin-toast-neon) !important;
+  font-size: 14px !important;
+  font-family: "JetBrains Mono", monospace !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: border-color 0.15s ease, background 0.15s ease !important;
+}
+.admin-messages-toast .admin-messages-close:hover {
+  border-color: var(--admin-toast-neon) !important;
+  background: rgba(0, 255, 65, 0.08) !important;
+  color: var(--admin-toast-neon) !important;
+}
+
+/* Por si el mensaje se muestra fuera del toast: estética terminal (fondo oscuro, neón) */
+ul.messagelist li.success {
+  background-color: var(--admin-bg, #0d1220) !important;
+  background-image: none !important;
+  color: var(--admin-toast-neon, #00ff41) !important;
+  border: 1px solid var(--admin-toast-neon, #00ff41) !important;
+  border-radius: 4px;
+  font-family: "JetBrains Mono", Consolas, monospace !important;
+}
+ul.messagelist li.info {
+  background-color: #1a2d4a !important;
+  color: #e8f2f8 !important;
+  border: 1px solid var(--admin-cyan);
+  border-radius: 6px;
+}
+ul.messagelist li.warning {
+  background-color: #4a3d0d !important;
+  color: #f5f0d8 !important;
+  border-radius: 6px;
+}
+ul.messagelist li.error {
+  background-color: #4a0d0d !important;
+  color: #f8e8e8 !important;
+  border-radius: 6px;
+}
+
+/* Fuente pixel: más espacio entre letras y palabras para leer mejor */
+.admin-pixel,
+#branding h1 a,
+#user-tools,
+#user-tools a,
+.breadcrumbs,
+.breadcrumbs a,
+#nav-sidebar .module caption,
+#nav-sidebar .module th a,
+.form-row label {
+  font-family: 'Press Start 2P', monospace !important;
+  letter-spacing: 0.12em !important;
+  word-spacing: 0.2em !important;
+}
+#branding h1 a { font-size: 10px !important; }
+#user-tools { font-size: 8px !important; }
+#user-tools a { text-decoration: none !important; }
+.breadcrumbs { font-size: 8px !important; }
+.breadcrumbs a { letter-spacing: 0.1em !important; }
+#nav-sidebar .module caption,
+#nav-sidebar .module th { font-size: 8px !important; }
+#nav-sidebar .module th a { letter-spacing: 0.08em !important; }
+.form-row label { font-size: 8px !important; color: var(--admin-text-muted) !important; letter-spacing: 0.08em !important; }
+
+/* Texto de formularios y tablas: sans-serif para leer bien */
+#content,
+#content h1,
+input, textarea, select,
+#result_list td,
+#result_list th,
+.submit-row input {
+  font-family: var(--font-family-primary, system-ui, sans-serif) !important;
+}
+#content h1 { color: var(--admin-text) !important; font-size: 1.25rem !important; }
+
+/* Header */
+#header {
+  background: var(--admin-surface) !important;
+  border-bottom: 1px solid var(--admin-border) !important;
+  color: var(--admin-text) !important;
+}
+
+#branding h1 a,
+#branding h1 a:link,
+#branding h1 a:visited { color: var(--admin-cyan) !important; }
+#branding h1 a:hover { color: var(--admin-text) !important; }
+
+#user-tools a { color: var(--admin-cyan-soft) !important; }
+#user-tools a:hover { color: var(--admin-cyan) !important; }
+
+/* Enlaces y botón Log out del header: visibles y que no se rompan */
+#user-tools > * { margin-left: 0.35em !important; }
+#user-tools > *:first-child { margin-left: 0 !important; }
+#user-tools form#logout-form { display: inline !important; margin-left: 0.35em !important; }
+#user-tools form#logout-form button {
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 8px !important;
+  letter-spacing: 0.12em !important;
+  word-spacing: 0.2em !important;
+  background: none !important;
+  border: none !important;
+  color: var(--admin-cyan-soft) !important;
+  cursor: pointer !important;
+  padding: 0.2em 0.4em !important;
+}
+#user-tools form#logout-form button:hover { color: var(--admin-cyan) !important; }
+/* Ocultar toggle de tema claro/oscuro para no romper nuestro tema fijo */
+#user-tools .theme-toggle { display: none !important; }
+
+/* Sidebar izquierdo (nav): sin amarillo, activo en cyan suave */
+#nav-sidebar {
+  background: var(--admin-surface) !important;
+  border-right-color: var(--admin-border) !important;
+}
+
+#nav-sidebar .module caption,
+#nav-sidebar .module th a {
+  color: var(--admin-text-muted) !important;
+}
+
+#nav-sidebar .current-app .section:link,
+#nav-sidebar .current-app .section:visited {
+  color: var(--admin-cyan) !important;
+  font-weight: bold;
+}
+
+#nav-sidebar .current-model {
+  background: var(--selected-row) !important;
+}
+
+#nav-sidebar .current-model a {
+  color: var(--admin-cyan) !important;
+}
+
+#nav-sidebar .module td,
+#nav-sidebar .module th {
+  border-color: var(--admin-border) !important;
+  color: var(--admin-text) !important;
+}
+
+/* Sidebar "Añadir": botón compacto, verde pastel */
+#nav-sidebar .addlink {
+  color: var(--admin-success) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.25em !important;
+  padding: 0.25em 0.5em !important;
+  border-radius: 4px !important;
+  background: rgba(110, 201, 158, 0.12) !important;
+  border: 1px solid rgba(110, 201, 158, 0.35) !important;
+  font-size: 7px !important;
+  text-decoration: none !important;
+}
+#nav-sidebar .addlink:hover {
+  background: rgba(110, 201, 158, 0.22) !important;
+  border-color: var(--admin-success) !important;
+  color: var(--admin-success-soft) !important;
+}
+
+#nav-filter {
+  background: var(--admin-bg) !important;
+  border-color: var(--admin-border) !important;
+  color: var(--admin-text) !important;
+  font-size: 12px;
+}
+
+/* Body y contenido */
+body {
+  background: var(--admin-bg) !important;
+  color: var(--admin-text) !important;
+}
+
+#content { color: var(--admin-text) !important; }
+
+/* Módulos / tarjetas */
+#content-main .module,
+.module {
+  background: var(--admin-surface) !important;
+  border: 1px solid var(--admin-border) !important;
+  border-radius: 6px;
+}
+
+#content-main .module h2,
+.module h2 {
+  background: transparent !important;
+  border-bottom: 1px solid var(--admin-border) !important;
+  color: var(--admin-cyan) !important;
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 8px !important;
+  letter-spacing: 0.08em !important;
+  word-spacing: 0.15em !important;
+  padding: 10px 15px !important;
+}
+
+#content-main .module a,
+.module a { color: var(--admin-link) !important; }
+#content-main .module a:hover,
+.module a:hover { color: var(--admin-text) !important; }
+
+.addlink, .addlink:link, .addlink:visited { color: var(--admin-success) !important; }
+.changelink, .changelink:link, .changelink:visited { color: var(--admin-cyan-soft) !important; }
+
+/* Botón grande "Añadir" en changelist: pastel, sin borde blanco duro */
+#content .object-tools .addlink,
+#content .object-tools a.addlink {
+  background: rgba(110, 201, 158, 0.12) !important;
+  border: 1px solid rgba(110, 201, 158, 0.4) !important;
+  color: var(--admin-success) !important;
+  padding: 0.4em 0.75em !important;
+  border-radius: 6px !important;
+}
+#content .object-tools .addlink:hover,
+#content .object-tools a.addlink:hover {
+  background: rgba(110, 201, 158, 0.22) !important;
+  border-color: var(--admin-success) !important;
+  color: var(--admin-success-soft) !important;
+}
+
+/* Widget de relación (FK): iconos Añadir / Editar / Ver como botones claros */
+.related-widget-wrapper {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+.related-widget-wrapper-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 6px !important;
+  border: 1px solid var(--admin-border) !important;
+  background: var(--admin-surface) !important;
+  padding: 0 !important;
+  transition: background 0.15s, border-color 0.15s !important;
+}
+.related-widget-wrapper-link img {
+  width: 14px !important;
+  height: 14px !important;
+  opacity: 0.9 !important;
+}
+.related-widget-wrapper-link.add-related {
+  border-color: rgba(110, 201, 158, 0.45) !important;
+  background: rgba(110, 201, 158, 0.1) !important;
+}
+.related-widget-wrapper-link.add-related:hover {
+  border-color: var(--admin-success) !important;
+  background: rgba(110, 201, 158, 0.2) !important;
+}
+.related-widget-wrapper-link.add-related img {
+  filter: brightness(0) saturate(100%) invert(65%) sepia(40%) saturate(400%) hue-rotate(110deg);
+}
+.related-widget-wrapper-link.change-related:hover,
+.related-widget-wrapper-link.view-related:hover {
+  border-color: var(--admin-cyan) !important;
+  background: rgba(110, 184, 212, 0.12) !important;
+}
+
+/* Tablas */
+#result_list,
+#changelist .results {
+  background: var(--admin-surface) !important;
+  border: 1px solid var(--admin-border) !important;
+  border-radius: 6px;
+}
+
+#result_list thead th {
+  background: rgba(110, 184, 212, 0.08) !important;
+  border-bottom: 1px solid var(--admin-border) !important;
+  color: var(--admin-cyan) !important;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+#result_list td,
+#result_list th {
+  border-color: var(--admin-border) !important;
+  color: var(--admin-text) !important;
+  font-size: 13px;
+}
+
+#result_list tbody tr:hover {
+  background: rgba(110, 184, 212, 0.04) !important;
+}
+
+/* Formularios: labels pixel, inputs legibles */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="url"],
+input[type="number"],
+textarea,
+select {
+  background: var(--admin-bg) !important;
+  border: 1px solid var(--admin-border) !important;
+  color: var(--admin-text) !important;
+  font-size: 14px !important;
+  border-radius: 4px;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--admin-cyan) !important;
+  box-shadow: 0 0 0 2px rgba(110, 184, 212, 0.15);
+}
+
+/* Botones: alto contraste y espaciado para leer mejor */
+.submit-row input,
+input[type="submit"],
+input[type="button"],
+.button {
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 8px !important;
+  letter-spacing: 0.1em !important;
+  word-spacing: 0.15em !important;
+  border-radius: 4px;
+  padding: 8px 14px !important;
+}
+
+/* Botón principal (Save): verde con texto oscuro para leer bien */
+.submit-row input.default,
+input[type="submit"].default,
+.button.default {
+  background: var(--admin-success) !important;
+  border: 1px solid var(--admin-success) !important;
+  color: var(--admin-success-text) !important;
+}
+
+.submit-row input.default:hover,
+input[type="submit"].default:hover {
+  background: var(--admin-success-soft) !important;
+  color: var(--admin-success-text) !important;
+}
+
+/* Botones secundarios: borde cyan, texto claro */
+.submit-row input:not(.default),
+input[type="submit"]:not(.default),
+.button:not(.default) {
+  background: transparent !important;
+  border: 1px solid var(--admin-cyan) !important;
+  color: var(--admin-text) !important;
+}
+
+.submit-row input:not(.default):hover,
+input[type="submit"]:not(.default):hover,
+.button:not(.default):hover {
+  background: rgba(110, 184, 212, 0.1) !important;
+  color: var(--admin-cyan) !important;
+}
+
+/* Panel Recent actions */
+#recent-actions-module {
+  background: var(--admin-surface) !important;
+  border: 1px solid var(--admin-border) !important;
+  border-radius: 6px;
+}
+
+#recent-actions-module h2,
+#recent-actions-module h3 {
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 8px !important;
+  color: var(--admin-text-muted) !important;
+  border-bottom-color: var(--admin-border) !important;
+}
+
+/* Breadcrumb */
+.breadcrumbs {
+  background: transparent !important;
+  color: var(--admin-text-muted) !important;
+  border-bottom: 1px solid var(--admin-border) !important;
+}
+
+.breadcrumbs a { color: var(--admin-cyan-soft) !important; }
+
+/* Login */
+.login { background: var(--admin-bg) !important; }
+.login #header { background: var(--admin-surface) !important; }
+.login .form-row input {
+  background: var(--admin-bg) !important;
+  border-color: var(--admin-border) !important;
+  color: var(--admin-text) !important;
+  font-size: 14px !important;
+}
+.login .submit-row input {
+  background: var(--admin-cyan) !important;
+  border: 1px solid var(--admin-cyan) !important;
+  color: var(--admin-bg) !important;
+}
+
+/* ========== Changelist: filtros, búsqueda, acciones, tabla ========== */
+
+#changelist.module,
+.change-list #changelist.module {
+  border-radius: 8px !important;
+  overflow: hidden !important;
+}
+
+/* Panel de filtros (sidebar derecha) */
+#changelist-filter {
+  background: var(--admin-surface) !important;
+  border: 1px solid var(--admin-border) !important;
+  border-radius: 8px !important;
+  padding: 0 !important;
+  margin-left: 24px !important;
+  overflow: hidden;
+}
+
+#changelist-filter h2 {
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 8px !important;
+  letter-spacing: 0.1em !important;
+  word-spacing: 0.15em !important;
+  color: var(--admin-cyan) !important;
+  padding: 12px 16px !important;
+  margin: 0 !important;
+  border-bottom: 1px solid var(--admin-border) !important;
+  background: rgba(110, 184, 212, 0.05) !important;
+}
+
+#changelist-filter h3,
+#changelist-filter details summary {
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 7px !important;
+  letter-spacing: 0.06em !important;
+  color: var(--admin-text-muted) !important;
+  padding: 10px 16px 6px !important;
+  margin: 0 !important;
+}
+
+#changelist-filter details > summary::before {
+  color: var(--admin-cyan-soft) !important;
+}
+
+#changelist-filter ul {
+  margin: 0 !important;
+  padding: 6px 16px 14px !important;
+  border-bottom: 1px solid var(--admin-border) !important;
+}
+
+#changelist-filter ul:last-child {
+  border-bottom: none !important;
+}
+
+#changelist-filter li {
+  margin-bottom: 4px !important;
+}
+
+#changelist-filter a {
+  color: var(--admin-cyan-soft) !important;
+  padding: 6px 8px !important;
+  border-radius: 4px !important;
+  text-decoration: none !important;
+  display: block !important;
+}
+
+#changelist-filter a:hover {
+  background: rgba(110, 184, 212, 0.1) !important;
+  color: var(--admin-cyan) !important;
+}
+
+#changelist-filter li.selected {
+  border-left: none !important;
+  padding-left: 0 !important;
+  margin-left: 0 !important;
+}
+
+#changelist-filter li.selected a {
+  background: rgba(110, 184, 212, 0.12) !important;
+  color: var(--admin-cyan) !important;
+  font-weight: bold;
+}
+
+#changelist-filter #changelist-filter-extra-actions {
+  padding: 8px 16px !important;
+  border-bottom-color: var(--admin-border) !important;
+}
+
+#changelist-filter #changelist-filter-extra-actions a {
+  color: var(--admin-cyan-soft) !important;
+  padding: 4px 0 !important;
+}
+
+/* Búsqueda y barra de acciones (encima de la tabla) */
+#changelist-search input[type="text"],
+#changelist-search input[type="search"] {
+  background: var(--admin-bg) !important;
+  border: 2px solid var(--admin-border) !important;
+  color: var(--admin-text) !important;
+  padding: 8px 12px !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  min-width: 200px;
+}
+
+#changelist-search input:focus {
+  border-color: var(--admin-cyan) !important;
+  box-shadow: 0 0 0 2px rgba(110, 184, 212, 0.15) !important;
+}
+
+#changelist-search input[type="submit"],
+#changelist .actions .button {
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 8px !important;
+  letter-spacing: 0.08em !important;
+  background: rgba(110, 184, 212, 0.15) !important;
+  border: 2px solid var(--admin-cyan) !important;
+  color: var(--admin-cyan) !important;
+  padding: 8px 14px !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+}
+
+#changelist-search input[type="submit"]:hover,
+#changelist .actions .button:hover {
+  background: rgba(110, 184, 212, 0.25) !important;
+  color: var(--admin-text) !important;
+}
+
+#changelist .actions label {
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 8px !important;
+  letter-spacing: 0.08em !important;
+  color: var(--admin-text-muted) !important;
+}
+
+#changelist .actions select {
+  background: var(--admin-bg) !important;
+  border: 2px solid var(--admin-border) !important;
+  color: var(--admin-text) !important;
+  padding: 6px 10px !important;
+  border-radius: 6px !important;
+  font-size: 13px !important;
+}
+
+#changelist .actions select:focus {
+  border-color: var(--admin-cyan) !important;
+}
+
+#changelist .actions .action-counter,
+#changelist .actions span.action-counter {
+  color: var(--admin-text-muted) !important;
+  font-size: 13px !important;
+}
+
+/* Tabla de resultados: scroll horizontal para ver todas las columnas */
+#changelist .results,
+#changelist-form .results {
+  border-radius: 8px !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  -webkit-overflow-scrolling: touch;
+}
+#changelist .results table#result_list,
+#changelist-form .results table#result_list {
+  min-width: max-content !important;
+}
+
+#result_list thead th {
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 8px !important;
+  letter-spacing: 0.08em !important;
+  word-spacing: 0.12em !important;
+  padding: 14px 16px !important;
+  background: rgba(110, 184, 212, 0.1) !important;
+  border-bottom: 2px solid var(--admin-border) !important;
+  color: var(--admin-cyan) !important;
+}
+
+#result_list tbody td,
+#result_list tbody th {
+  padding: 12px 16px !important;
+  border-bottom: 1px solid var(--hairline-color) !important;
+  font-size: 14px !important;
+  vertical-align: middle !important;
+}
+
+#result_list tbody tr:hover {
+  background: rgba(110, 184, 212, 0.06) !important;
+}
+
+#result_list tbody tr.selected,
+#changelist tbody tr.selected,
+#changelist tbody tr:has(.action-select:checked) {
+  background: var(--selected-row) !important;
+}
+
+#result_list tbody td a,
+#result_list tbody th a {
+  color: var(--admin-cyan-soft) !important;
+  text-decoration: none !important;
+}
+
+#result_list tbody td a:hover,
+#result_list tbody th a:hover {
+  color: var(--admin-cyan) !important;
+  text-decoration: underline !important;
+}
+
+#result_list input[type="number"],
+#result_list input[type="text"] {
+  padding: 6px 10px !important;
+  border-radius: 4px !important;
+  width: auto !important;
+  min-width: 3em !important;
+}
+
+/* Footer del changelist (contador + botón Save) */
+#changelist .changelist-footer {
+  border-top: 1px solid var(--admin-border) !important;
+  border-bottom: none !important;
+  padding: 14px 16px !important;
+  background: rgba(110, 184, 212, 0.04) !important;
+  border-radius: 0 0 8px 8px !important;
+}
+
+#changelist .changelist-footer .paginator,
+#changelist .changelist-footer .xfull {
+  color: var(--admin-text-muted) !important;
+  font-size: 13px !important;
+}
+
+#changelist .changelist-footer input[type="submit"].default {
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 8px !important;
+  padding: 10px 18px !important;
+  border-radius: 6px !important;
+}
+
+/* Paginación */
+#changelist .paginator {
+  background: var(--admin-surface) !important;
+  border: 1px solid var(--admin-border) !important;
+  border-top: none !important;
+  color: var(--admin-text-muted) !important;
+  padding: 12px 16px !important;
+}
+
+#changelist .paginator a {
+  color: var(--admin-cyan-soft) !important;
+}
+
+#changelist .paginator a:hover {
+  color: var(--admin-cyan) !important;
+}

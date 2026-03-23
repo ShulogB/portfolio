@@ -1,0 +1,46 @@
+{% load i18n %}
+<div class="dashboard-metrics">
+  <div class="metrics-module metrics-contacts">
+    <h2>{% translate "Contactos recibidos" %} ({{ contact_count }})</h2>
+    {% if recent_contacts %}
+    <table class="metrics-table">
+      <thead>
+        <tr>
+          <th>{% translate "Email" %}</th>
+          <th>{% translate "Date" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in recent_contacts %}
+        <tr>
+          <td><a href="{% url 'admin:core_contactsubmission_change' c.pk %}">{{ c.email }}</a></td>
+          <td>{{ c.created_at|date:"d/m/Y H:i" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="metrics-footer"><a href="{% url 'admin:core_contactsubmission_changelist' %}">Ver todos</a></p>
+    {% else %}
+    <p class="metrics-empty">No hay contactos aún.</p>
+    {% endif %}
+  </div>
+  <div class="metrics-module metrics-views">
+    <h2>{% translate "Visitas al sitio" %} ({{ page_view_count }})</h2>
+    {% if views_by_path %}
+    {% with max_count=views_by_path.0.count|default:1 %}
+    <div class="metrics-bars">
+      {% for v in views_by_path %}
+      <div class="metrics-bar-row">
+        <span class="metrics-bar-label" title="{{ v.path }}">{{ v.path|truncatechars:45 }}</span>
+        <span class="metrics-bar-wrap"><span class="metrics-bar-fill" style="width: {% widthratio v.count max_count 100 %}%"></span></span>
+        <span class="metrics-bar-count">{{ v.count }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endwith %}
+    <p class="metrics-footer"><a href="{% url 'admin:core_pageview_changelist' %}">Ver todas</a></p>
+    {% else %}
+    <p class="metrics-empty">No hay visitas registradas aún.</p>
+    {% endif %}
+  </div>
+</div>

@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Paleta Sega años 90 – prioridad legibilidad: fondo menos negro, texto más claro */
+:root {
+  --charcoal: #0e1118;
+  --sega-bg: #141c2b;
+  --sega-bg-dark: #0e1320;
+  --sega-cyan: #7a9daa;
+  --sega-yellow: #9aaa7a;
+  --sega-red: #ae7a82;
+  --sega-green: #7a9f88;
+  --sega-blue: #7a8aa4;
+  --sega-white: #dce4eb;
+  --sega-muted: #8fa3b0;
+  --border: rgba(106, 141, 154, 0.32);
+  --accent: #7a9daa;
+  --scanline: rgba(0, 0, 0, 0.04);
+}
+
+body {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      var(--scanline) 2px,
+      var(--scanline) 4px
+    ),
+    radial-gradient(
+      ellipse 120% 80% at 50% -20%,
+      rgba(106, 141, 154, 0.05),
+      transparent 50%
+    ),
+    linear-gradient(180deg, var(--sega-bg) 0%, var(--sega-bg-dark) 100%);
+  background-attachment: fixed;
+  color: var(--sega-white);
+}
+
+/* Texto de lectura: tipografía clara (solo títulos y dashboards usan pixel) */
+@layer utilities {
+  .font-reading {
+    font-family: var(--font-inter), system-ui, sans-serif;
+    line-height: 1.7;
+    letter-spacing: 0.01em;
+  }
+}
+
+/* Bordes tipo cartucho / UI Sega – contraste un poco más visible */
+.sega-border {
+  border: 2px solid var(--border);
+  box-shadow:
+    inset 0 0 0 1px rgba(106, 141, 154, 0.2),
+    0 0 10px rgba(106, 141, 154, 0.12);
+}
+
+.sega-panel {
+  background: linear-gradient(180deg, rgba(0, 13, 26, 0.9) 0%, rgba(0, 6, 12, 0.95) 100%);
+  border: 1px solid var(--border);
+  box-shadow: inset 0 0 20px rgba(106, 141, 154, 0.08);
+}
+
+/* Ítem activo del menú: glow un poco más visible */
+@keyframes sega-glow-pulse {
+  0%, 100% { box-shadow: inset 0 0 0 1px rgba(106, 141, 154, 0.22); }
+  50% { box-shadow: inset 0 0 10px 1px rgba(106, 141, 154, 0.16); }
+}
+
+.sidebar-item-active {
+  animation: sega-glow-pulse 2s ease-in-out infinite;
+}
+
+/* Hover con toque de color Sega */
+nav button:hover:not(.sidebar-item-active) {
+  border-left-color: rgba(106, 141, 154, 0.45) !important;
+}
+
+/* Marco para imágenes de proyectos (estilo cartucho) */
+.sega-img {
+  border: 1px solid var(--border);
+  box-shadow:
+    inset 0 0 0 1px rgba(106, 141, 154, 0.18),
+    0 0 12px rgba(106, 141, 154, 0.12);
+  image-rendering: auto;
+}

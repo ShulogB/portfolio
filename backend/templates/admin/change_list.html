@@ -1,0 +1,137 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_list core_admin_tags %}
+
+{% block title %}{% if cl.formset and cl.formset.errors %}{% translate "Error:" %} {% endif %}{{ block.super }}{% endblock %}
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static "admin/css/changelists.css" %}">
+  {% if cl.formset %}
+    <link rel="stylesheet" href="{% static "admin/css/forms.css" %}">
+  {% endif %}
+  {% if cl.formset or action_form %}
+    <script src="{% url 'admin:jsi18n' %}"></script>
+  {% endif %}
+  {{ media.css }}
+  {% if not actions_on_top and not actions_on_bottom %}
+    <style>
+      #changelist table thead th:first-child {width: inherit}
+    </style>
+  {% endif %}
+  <style>
+    #content .admin-changelist-title {
+      font-family: 'Press Start 2P', monospace !important;
+      font-size: 10px !important;
+      letter-spacing: 0.1em !important;
+      word-spacing: 0.15em !important;
+      color: var(--admin-text, #f0f8ff) !important;
+    }
+    .admin-section-description {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 8px;
+      line-height: 1.6;
+      letter-spacing: 0.08em;
+      word-spacing: 0.15em;
+      color: var(--admin-text-muted, #b8d4e8);
+      background: rgba(110, 184, 212, 0.06);
+      border: 1px solid var(--admin-border);
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+    }
+  </style>
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+{{ media.js }}
+<script src="{% static 'admin/js/filters.js' %}" defer></script>
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-list{% endblock %}
+
+{% if not is_popup %}
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+&rsaquo; <a href="{% url 'admin:app_list' app_label=cl.opts.app_label %}">{{ cl.opts.app_config.verbose_name }}</a>
+&rsaquo; {{ cl.opts.verbose_name_plural|capfirst }}
+</div>
+{% endblock %}
+{% endif %}
+
+{% block coltype %}{% endblock %}
+
+{% block content_title %}
+<h1 class="admin-changelist-title">{% blocktranslate with model_name=cl.opts.verbose_name %}What does {{ model_name }} do?{% endblocktranslate %}</h1>
+{% endblock %}
+
+{% block content %}
+  <div id="content-main">
+    {% admin_change_list_description cl as section_desc %}
+    {% if section_desc %}
+      <p class="admin-section-description">{{ section_desc }}</p>
+    {% endif %}
+    {% admin_has_spanish_fields cl as has_spanish %}
+    {% if has_spanish %}
+      <p class="admin-section-description" style="margin-top: 0.5em;">
+        {% translate "To add or edit content in English and Spanish: open a record (click a row). In the edit form you'll see «English» and «Español» sections and the «Copy English → Spanish» button." %}
+      </p>
+    {% endif %}
+    {% block object-tools %}
+        <ul class="object-tools">
+          {% block object-tools-items %}
+            {% change_list_object_tools %}
+          {% endblock %}
+        </ul>
+    {% endblock %}
+    {% if cl.formset and cl.formset.errors %}
+        <p class="errornote">
+        {% blocktranslate count counter=cl.formset.total_error_count %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktranslate %}
+        </p>
+        {{ cl.formset.non_form_errors }}
+    {% endif %}
+    <div class="module{% if cl.has_filters %} filtered{% endif %}" id="changelist">
+      <div class="changelist-form-container">
+        {% block filters %}
+          {% if cl.has_filters %}
+          <search id="changelist-filter" aria-labelledby="changelist-filter-header">
+            <h2 id="changelist-filter-header">{% translate 'Filter' %}</h2>
+            {% if cl.is_facets_optional or cl.has_active_filters %}<div id="changelist-filter-extra-actions">
+              {% if cl.is_facets_optional %}<h3>
+                {% if cl.add_facets %}<a href="{{ cl.remove_facet_link }}" class="hidelink">{% translate "Hide counts" %}</a>
+                {% else %}<a href="{{ cl.add_facet_link }}" class="viewlink">{% translate "Show counts" %}</a>{% endif %}
+              </h3>{% endif %}
+              {% if cl.has_active_filters %}<h3>
+                <a href="{{ cl.clear_all_filters_qs }}">&#10006; {% translate "Clear all filters" %}</a>
+              </h3>{% endif %}
+            </div>{% endif %}
+            {% for spec in cl.filter_specs %}{% admin_list_filter cl spec %}{% endfor %}
+          </search>
+          {% endif %}
+        {% endblock %}
+        <div>
+          {% block search %}{% search_form cl %}{% endblock %}
+          {% block date_hierarchy %}{% if cl.date_hierarchy %}{% date_hierarchy cl %}{% endif %}{% endblock %}
+
+          <form id="changelist-form" method="post"{% if cl.formset and cl.formset.is_multipart %} enctype="multipart/form-data"{% endif %} novalidate>{% csrf_token %}
+          {% if cl.formset %}
+            <div>{{ cl.formset.management_form }}</div>
+          {% endif %}
+
+          {% block result_list %}
+            {% if action_form and actions_on_top and cl.show_admin_actions %}{% admin_actions %}{% endif %}
+            {% result_list cl %}
+            {% if action_form and actions_on_bottom and cl.show_admin_actions %}{% admin_actions %}{% endif %}
+          {% endblock %}
+          {% block pagination %}
+          <div class="changelist-footer">
+          {% pagination cl %}
+          {% if cl.formset and cl.result_count %}<input type="submit" name="_save" class="default" value="{% translate 'Save' %}">{% endif %}
+          {% endblock %}
+          </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

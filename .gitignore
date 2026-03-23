@@ -1,0 +1,15 @@
+.env
+venv/
+__pycache__/
+
+# Next.js
+.next/
+out/
+node_modules/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/

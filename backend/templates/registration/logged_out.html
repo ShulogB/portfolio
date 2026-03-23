@@ -1,0 +1,38 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}{% translate "Logged out" %} | Portfolio Admin{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+  body.logged-out { background: #0d1220 !important; min-height: 100vh !important; height: 100vh !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; margin: 0 !important; padding: 0 !important; }
+  body.logged-out #header { display: none !important; }
+  body.logged-out #container > nav { display: none !important; }
+  body.logged-out #footer { display: none !important; }
+  body.logged-out #container { flex: 0 0 auto !important; width: min(280px, 92vw) !important; max-width: 280px !important; margin: 0 auto !important; padding: 1rem !important; height: auto !important; box-sizing: border-box !important; }
+  body.logged-out .main { flex: 0 0 auto !important; width: 100% !important; max-width: 100% !important; }
+  body.logged-out #content { padding: 0 !important; width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; }
+  body.logged-out .logout-card { width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; background: var(--admin-surface) !important; border: 1px solid var(--admin-border) !important; border-radius: 8px !important; padding: 1.25rem 1rem !important; box-shadow: 0 4px 16px rgba(0,0,0,0.3) !important; text-align: center !important; }
+  body.logged-out #content .logout-card h1 { font-family: 'Press Start 2P', monospace !important; color: var(--admin-cyan-soft) !important; font-size: 0.875rem !important; font-weight: normal !important; letter-spacing: 0.06em !important; word-spacing: 0.05em !important; margin: 0 0 0.5rem !important; line-height: 1.4 !important; }
+  body.logged-out .logout-card p { font-family: 'Press Start 2P', monospace !important; color: var(--admin-text-muted) !important; font-size: 0.6875rem !important; line-height: 1.6 !important; letter-spacing: 0.04em !important; word-spacing: 0.05em !important; margin: 0 0 0.75rem !important; }
+  body.logged-out .logout-card a { font-family: 'Press Start 2P', monospace !important; display: inline-block !important; padding: 0.4rem 0.75rem !important; background: rgba(110, 184, 212, 0.2) !important; border: 1px solid var(--admin-cyan) !important; color: var(--admin-cyan) !important; border-radius: 4px !important; font-size: 0.6875rem !important; letter-spacing: 0.05em !important; word-spacing: 0.05em !important; text-decoration: none !important; }
+  body.logged-out .logout-card a:hover { background: rgba(110, 184, 212, 0.3) !important; color: var(--admin-text) !important; }
+</style>
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} logged-out{% endblock %}
+
+{% block usertools %}{% endblock %}
+{% block nav-global %}{% endblock %}
+{% block nav-sidebar %}{% endblock %}
+{% block content_title %}{% endblock %}
+{% block nav-breadcrumbs %}{% endblock %}
+
+{% block content %}
+<div class="logout-card">
+  <h1>{% translate "Logged out" %}</h1>
+  <p>{% translate "Thanks for spending some quality time with the web site today." %}</p>
+  <a href="{% url 'admin:index' %}">{% translate "Log in again" %}</a>
+</div>
+{% endblock %}

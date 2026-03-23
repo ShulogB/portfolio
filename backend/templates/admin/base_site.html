@@ -1,0 +1,90 @@
+{% extends "admin/base.html" %}
+{% load i18n static %}
+
+{% block title %}{{ title }} | Portfolio Admin{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Press+Start+2P&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">Portfolio Admin</a></h1>
+{% endblock %}
+
+{% block userlinks %}
+<span class="admin-lang-switcher" aria-label="{% translate 'Language' %}">
+  <form action="{% url 'set_language' %}" method="post" class="admin-lang-form">{% csrf_token %}
+    <input name="next" type="hidden" value="{{ request.get_full_path }}">
+    <input name="language" type="hidden" value="en">
+    <button type="submit" class="admin-lang-btn">EN</button>
+  </form>
+  <form action="{% url 'set_language' %}" method="post" class="admin-lang-form">{% csrf_token %}
+    <input name="next" type="hidden" value="{{ request.get_full_path }}">
+    <input name="language" type="hidden" value="es">
+    <button type="submit" class="admin-lang-btn">ES</button>
+  </form>
+</span>
+{{ block.super }}
+{% endblock %}
+
+{% block messages %}
+{% if messages %}
+<div id="admin-messages-overlay" class="admin-messages-overlay" role="alert" aria-hidden="false" style="position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:1rem;background:rgba(0,0,0,0.5);">
+  <div id="admin-messages-toast" class="admin-messages-toast admin-toast-terminal" style="position:relative;max-width:420px;width:100%;padding:0;background:#0d1220;border:2px solid #00ff41;border-radius:4px;color:#00ff41;font-family:'JetBrains Mono',Consolas,monospace;box-shadow:0 8px 24px rgba(0,0,0,0.5);">
+    <button type="button" class="admin-messages-close" aria-label="{% translate 'Close' %}" style="position:absolute;top:6px;right:6px;width:24px;height:24px;margin:0;padding:0;border:1px solid rgba(0,255,65,0.6);border-radius:2px;background:transparent;color:#00ff41;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-family:inherit;">&times;</button>
+    <div class="admin-toast-terminal-inner" style="display:flex;align-items:flex-start;gap:0.75rem;padding:1rem 2.5rem 1rem 1rem;">
+      <span class="admin-toast-icon" aria-hidden="true" style="flex-shrink:0;color:#00ff41;font-size:1rem;font-weight:bold;">&#10003;</span>
+      <ul class="messagelist" style="margin:0;padding:0;list-style:none;flex:1;">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %} style="display:block;background:transparent !important;background-image:none !important;color:#00ff41 !important;font-size:13px;font-weight:500;line-height:1.5;padding:0;margin:0;font-family:inherit;">{{ message|capfirst }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock messages %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'admin/css/custom.css' %}">
+<style>
+  .admin-lang-switcher { display: inline-flex !important; align-items: center !important; gap: 0.25em !important; margin-right: 0.5em !important; }
+  .admin-lang-form { display: inline !important; margin: 0 !important; }
+  .admin-lang-btn { font-family: 'Press Start 2P', monospace !important; font-size: 8px !important; letter-spacing: 0.08em !important; background: none !important; border: 1px solid var(--admin-cyan-soft) !important; color: var(--admin-cyan-soft) !important; padding: 0.2em 0.5em !important; cursor: pointer !important; border-radius: 4px !important; }
+  .admin-lang-btn:hover { color: var(--admin-cyan) !important; border-color: var(--admin-cyan) !important; }
+  /* Forzar toast terminal: anular cualquier estilo de Django sobre nuestro overlay/toast */
+  #admin-messages-overlay,
+  #admin-messages-overlay * { box-sizing: border-box; }
+  #admin-messages-toast .messagelist li,
+  #admin-messages-toast .messagelist li.success,
+  #admin-messages-toast .messagelist li.info { background: transparent !important; background-image: none !important; color: #00ff41 !important; }
+</style>
+{% endblock %}
+
+{% block footer %}
+{{ block.super }}
+{% if messages %}
+<script>
+(function() {
+  var overlay = document.getElementById('admin-messages-overlay');
+  if (!overlay) return;
+  var closeBtn = overlay.querySelector('.admin-messages-close');
+  function hide() {
+    overlay.classList.add('admin-messages-overlay-hidden');
+    setTimeout(function() {
+      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    }, 250);
+  }
+  if (closeBtn) closeBtn.addEventListener('click', hide);
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) hide();
+  });
+  setTimeout(hide, 2500);
+})();
+</script>
+{% endif %}
+{% endblock %}
