@@ -10,7 +10,8 @@ const en = {
     subtitle:
       "Senior Backend Engineer focused on transactional systems, payment flows, identity gateways and strict trust boundaries. Production systems built for correctness under concurrency and failure.",
     location: "Argentina — open to remote",
-    impactLine: "~2k reservations/month and ~45k logins/month in production; 99.5% uptime on identity gateway over 12 months.",
+    impactLine:
+      "Production backend engineer: hardened payment integrity against hostile inputs, moved integrations to contract-first payloads, and operated secure-by-default APIs with clear trust boundaries.",
   },
   principles: [
     {
@@ -109,37 +110,37 @@ const en = {
   ] as ExperienceSummaryItem[],
   productionBackends: [
     {
-      title: "Payment state consistency under retries",
+      title: "Payment integrity under hostile inputs",
       context:
-        "External providers retry webhooks and clients can double-submit under unstable network conditions.",
+        "The payment path accepted attacker-controlled signals (webhook mode flags and client-sent final price), enabling false approvals.",
       decision:
-        "Use a single writer for paid state through webhook processing, idempotent by event_id, in one DB transaction.",
+        "Enforced signature validation independently of request flags and recomputed/validated amounts server-side in checkout and webhooks.",
       tradeoff:
-        "Slight delay in user-visible payment confirmation while waiting for provider callback.",
+        "Higher validation complexity and edge cases around rounding tolerance.",
       outcome:
-        "Removed double-apply and split-state scenarios (payment success with reservation still pending).",
+        "Closed direct fraud paths and prevented invalid approved states from reaching reservation status.",
     },
     {
-      title: "Availability correctness under concurrency",
+      title: "Contract-first integrations over text parsing",
       context:
-        "Multiple users can attempt to reserve the same slot at nearly the same time.",
+        "Transfer details were propagated as free text, causing ambiguity and brittle downstream behavior.",
       decision:
-        "Serialize the critical section with pessimistic locking (SELECT FOR UPDATE) at the availability boundary.",
+        "Moved package transfer payloads to structured contract fields (kind + trfDetail) with strict conditional validation and normalization.",
       tradeoff:
-        "Reduced throughput on hot rows under burst traffic.",
+        "More schema and validation branches to maintain across product/package flows.",
       outcome:
-        "Deterministic booking outcomes and elimination of double-booking incidents.",
+        "Deterministic integration behavior and cleaner end-to-end operational data quality.",
     },
     {
-      title: "Identity trust boundaries across legacy services",
+      title: "Secure-by-default API posture",
       context:
-        "Downstream systems consumed identity data with inconsistent authentication behavior.",
+        "Open permissions, verbose errors, and inconsistent endpoint controls increased exposure risk.",
       decision:
-        "Keep a central gateway as sole token issuer; downstream services validate signature and claims only.",
+        "Set authenticated defaults globally, added scoped throttling for sensitive routes, and moved technical detail from client responses to internal logs.",
       tradeoff:
-        "Gateway becomes a critical login dependency that must be monitored carefully.",
+        "Tighter operational discipline and occasional contract adjustments in endpoint responses.",
       outcome:
-        "Clear trust boundaries, lower auth drift, and safer minimal-claims token model.",
+        "Lowered PII exposure and abuse surface while improving resilience under noisy traffic.",
     },
   ] as ProductionDecision[],
   decisions: [

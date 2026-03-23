@@ -20,7 +20,8 @@ const es = {
     subtitle:
       "Ingeniero backend senior enfocado en sistemas transaccionales, flujos de pago, gateways de identidad y límites de confianza estrictos. Sistemas en producción pensados para corrección bajo concurrencia y fallas.",
     location: "Argentina — abierto a remoto",
-    impactLine: "~2k reservas/mes y ~45k logins/mes en producción; 99.5% uptime en gateway de identidad en 12 meses.",
+    impactLine:
+      "Ingeniero backend de producción: reforcé integridad de pagos ante inputs hostiles, migré integraciones a payloads contract-first y operé APIs secure-by-default con límites de confianza claros.",
   },
   principles: [
     { title: "Una única fuente de verdad para estado crítico", description: "Un componente es el único escritor del estado de pago e identidad. El frontend no puede mutar estado transaccional o verificado; los sistemas legacy no autentican. Elimina escritores competidores y confianza del lado cliente en el camino crítico." },
@@ -95,37 +96,37 @@ const es = {
   ] as ExperienceSummaryItem[],
   productionBackends: [
     {
-      title: "Consistencia de estado de pago bajo reintentos",
+      title: "Integridad de pagos ante inputs hostiles",
       context:
-        "Proveedores externos reintentan webhooks y el cliente puede duplicar envíos con conectividad inestable.",
+        "El flujo de pagos aceptaba señales controladas por atacante (flags en webhook y precio final enviado por cliente).",
       decision:
-        "Definir un único escritor para estado paid vía webhooks, idempotente por event_id, dentro de una transacción DB.",
+        "Validación de firma independiente de flags del request y recálculo/validación server-side de montos en checkout y webhooks.",
       tradeoff:
-        "Leve demora en la confirmación visible mientras se espera el callback del proveedor.",
+        "Mayor complejidad de validación y manejo de tolerancias por redondeo.",
       outcome:
-        "Eliminación de doble aplicación y de estados partidos (pago exitoso con reserva pendiente).",
+        "Cierre de caminos de fraude y prevención de aprobaciones inválidas sobre estado de reserva.",
     },
     {
-      title: "Corrección de disponibilidad bajo concurrencia",
+      title: "Integraciones contract-first sobre parseo textual",
       context:
-        "Varios usuarios pueden intentar reservar el mismo slot casi al mismo tiempo.",
+        "Los datos de transfer viajaban como texto libre, generando ambigüedad y comportamiento frágil aguas abajo.",
       decision:
-        "Serializar la sección crítica con lock pesimista (SELECT FOR UPDATE) en la frontera de disponibilidad.",
+        "Migración a payload estructurado (kind + trfDetail) con validación condicional estricta y normalización temprana de datos.",
       tradeoff:
-        "Menor throughput en filas calientes bajo picos de tráfico.",
+        "Más ramas de esquema/validación a mantener entre flujos product/package.",
       outcome:
-        "Resultado determinista en reservas y eliminación de incidentes por doble reserva.",
+        "Comportamiento determinista de integración y mejora de calidad de datos end-to-end.",
     },
     {
-      title: "Límites de confianza de identidad en servicios legacy",
+      title: "Postura API secure-by-default",
       context:
-        "Sistemas downstream consumían identidad con comportamientos inconsistentes de autenticación.",
+        "Permisos abiertos, errores verbosos y controles inconsistentes elevaban el riesgo de exposición.",
       decision:
-        "Gateway central como único emisor de tokens; los servicios solo validan firma y claims.",
+        "Defaults globales autenticados, throttling por scope en rutas sensibles y detalle técnico solo en logs internos.",
       tradeoff:
-        "El gateway se vuelve dependencia crítica para login y requiere monitoreo estricto.",
+        "Mayor disciplina operativa y ajustes de contrato en algunas respuestas de endpoint.",
       outcome:
-        "Límite de confianza claro, menor deriva de auth y modelo de token más seguro con claims mínimos.",
+        "Reducción de superficie de abuso/exposición de PII y mayor resiliencia ante tráfico ruidoso.",
     },
   ] as ProductionDecision[],
   decisions: [
