@@ -1,5 +1,6 @@
 "use client";
 
+import { useLanguage } from "@/context/LanguageContext";
 import {
   SiPostgresql,
   SiDjango,
@@ -10,6 +11,8 @@ import {
   SiStripe,
   SiMercadopago,
   SiKeycloak,
+  SiVercel,
+  SiRailway,
 } from "react-icons/si";
 import type { IconType } from "react-icons";
 
@@ -23,9 +26,16 @@ const ICON_MAP: Record<string, IconType> = {
   Stripe: SiStripe,
   "Mercado Pago": SiMercadopago,
   Cognito: SiKeycloak,
+  Vercel: SiVercel,
+  Railway: SiRailway,
 };
 
-export default function StackTags({ items }: { items: string[] }) {
+type StackTagsProps = {
+  itemsPrincipal: string[];
+  itemsComplementary?: string[];
+};
+
+function TagList({ items }: { items: string[] }) {
   return (
     <div className="flex flex-wrap justify-center gap-2">
       {items.map((item) => {
@@ -42,6 +52,30 @@ export default function StackTags({ items }: { items: string[] }) {
           </span>
         );
       })}
+    </div>
+  );
+}
+
+export default function StackTags({ itemsPrincipal, itemsComplementary = [] }: StackTagsProps) {
+  const { lang } = useLanguage();
+
+  return (
+    <div className="space-y-5 w-full">
+      <div className="space-y-2">
+        <h3 className="font-pixel text-[10px] uppercase tracking-widest text-sega-yellow/90 text-center">
+          {lang === "es" ? "Conocimiento principal" : "Core knowledge"}
+        </h3>
+        <TagList items={itemsPrincipal} />
+      </div>
+
+      {itemsComplementary.length > 0 && (
+        <div className="space-y-2">
+          <h3 className="font-pixel text-[10px] uppercase tracking-widest text-sega-yellow/75 text-center">
+            {lang === "es" ? "Conocimiento complementario" : "Complementary knowledge"}
+          </h3>
+          <TagList items={itemsComplementary} />
+        </div>
+      )}
     </div>
   );
 }

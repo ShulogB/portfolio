@@ -198,7 +198,10 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
           onHeaderClick={() => handleSectionClick("stack")}
           centered
         >
-          <StackTags items={content.stack} />
+          <StackTags
+            itemsPrincipal={content.stack}
+            itemsComplementary={content.stackComplementary}
+          />
         </CollapsibleSection>
         <CollapsibleSection
           id="contact"

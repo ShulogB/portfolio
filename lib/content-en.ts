@@ -151,7 +151,8 @@ const en = {
     "Pessimistic lock (SELECT FOR UPDATE) on availability when creating a reservation; double-booking eliminated at observed conflict rate.",
     "Identity validated on every login; never issue \"verified\" when verification failed. Degraded modes when national APIs are unavailable.",
   ],
-  stack: ["PostgreSQL", "Django REST Framework", "Docker", "CI/CD", "GitHub Actions", "AWS", "Stripe", "Mercado Pago", "Cognito"],
+  stack: ["PostgreSQL", "Django REST Framework", "Docker", "CI/CD", "GitHub Actions", "Stripe", "Mercado Pago", "Cognito"],
+  stackComplementary: ["AWS", "Vercel", "Railway"],
   explicitTradeoffs: [
     { decision: "Webhooks as single source of truth for \"paid\".", gained: "No frontend or redirect driving state; provider is authority. Double-apply impossible by design.", sacrificed: "User waits for webhook; we depend on provider delivery and our endpoint availability. No instant \"paid\" from redirect." },
     { decision: "Pessimistic lock (SELECT FOR UPDATE) on availability.", gained: "No double-booking; deterministic behaviour at consistency boundary.", sacrificed: "Throughput on hot slots limited; lock contention under load. No optimistic retry path." },

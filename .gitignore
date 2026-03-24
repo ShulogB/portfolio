@@ -1,6 +1,8 @@
 .env
 venv/
+backend/.venv/
 __pycache__/
+backend/db.sqlite3
 
 # Next.js
 .next/
