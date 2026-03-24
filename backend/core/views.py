@@ -8,6 +8,14 @@ from .models import ContactSubmission, PageView
 from .serializers import ContactSubmissionSerializer, PageViewSerializer
 
 
+class HealthCheckView(APIView):
+    """GET: endpoint liviano para healthchecks de infraestructura."""
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        return Response({"status": "ok"}, status=status.HTTP_200_OK)
+
+
 class ContactThrottle(AnonRateThrottle):
     rate = "10/hour"
 

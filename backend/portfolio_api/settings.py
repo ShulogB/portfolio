@@ -71,6 +71,15 @@ if not DEBUG and SECRET_KEY == "dev-secret-change-in-production":
     raise RuntimeError("SECRET_KEY must be set in production.")
 
 ALLOWED_HOSTS = _csv_env("ALLOWED_HOSTS", ["localhost", "127.0.0.1"])
+_railway_hosts = [
+    os.environ.get("RAILWAY_PUBLIC_DOMAIN", "").strip(),
+    os.environ.get("RAILWAY_PRIVATE_DOMAIN", "").strip(),
+]
+for _host in _railway_hosts:
+    if _host and _host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(_host)
+if ".railway.app" not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(".railway.app")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
