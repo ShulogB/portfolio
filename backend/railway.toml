@@ -3,7 +3,7 @@ builder = "DOCKERFILE"
 dockerfilePath = "backend/Dockerfile"
 
 [deploy]
-preDeployCommand = "python manage.py migrate && if [ \"$CREATE_BOOTSTRAP_ADMIN\" = \"true\" ]; then python manage.py createsuperuser --noinput || true; python manage.py shell -c \"import os; from django.contrib.auth import get_user_model; U=get_user_model(); u=os.getenv('DJANGO_SUPERUSER_USERNAME'); e=os.getenv('DJANGO_SUPERUSER_EMAIL'); p=os.getenv('DJANGO_SUPERUSER_PASSWORD'); obj=U.objects.get(username=u); obj.email=e; obj.is_staff=True; obj.is_superuser=True; obj.role='ADMIN'; obj.set_password(p); obj.save(); print('bootstrap admin ready')\"; else echo 'bootstrap admin skipped'; fi"
+preDeployCommand = "python manage.py migrate && echo \"CREATE_BOOTSTRAP_ADMIN(raw)='$CREATE_BOOTSTRAP_ADMIN'\" && BOOTSTRAP_FLAG=$(printf '%s' \"$CREATE_BOOTSTRAP_ADMIN\" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]') && echo \"CREATE_BOOTSTRAP_ADMIN(normalized)='$BOOTSTRAP_FLAG'\" && if [ \"$BOOTSTRAP_FLAG\" = \"true\" ] || [ \"$BOOTSTRAP_FLAG\" = \"1\" ] || [ \"$BOOTSTRAP_FLAG\" = \"yes\" ]; then python manage.py createsuperuser --noinput || true; python manage.py shell -c \"import os; from django.contrib.auth import get_user_model; U=get_user_model(); u=os.getenv('DJANGO_SUPERUSER_USERNAME'); e=os.getenv('DJANGO_SUPERUSER_EMAIL'); p=os.getenv('DJANGO_SUPERUSER_PASSWORD'); obj=U.objects.get(username=u); obj.email=e; obj.is_staff=True; obj.is_superuser=True; obj.role='ADMIN'; obj.set_password(p); obj.save(); print('bootstrap admin ready')\"; else echo 'bootstrap admin skipped'; fi"
 healthcheckPath = "/api/v1/health/"
 healthcheckTimeout = 120
 restartPolicyType = "on_failure"
