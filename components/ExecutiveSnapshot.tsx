@@ -1,11 +1,18 @@
 "use client";
 
 import { useLanguage } from "@/context/LanguageContext";
+import { usePortfolioContent } from "@/context/PortfolioContentContext";
+import { orderedExecutiveSnapshot } from "@/lib/portfolioContentApi";
 
 export default function ExecutiveSnapshot() {
-  const { content } = useLanguage();
-  const bullets = content.executiveSnapshot as string[];
+  const { content, lang } = useLanguage();
+  const portfolio = usePortfolioContent();
   const title = content.ui.sections.executiveSnapshot;
+  const bullets = orderedExecutiveSnapshot(portfolio)
+    .map((row) => (lang === "es" && row.text_es ? row.text_es : row.text))
+    .filter(Boolean);
+
+  if (bullets.length === 0) return null;
 
   return (
     <div className="pb-6 mb-6 border-b-2 border-sega-cyan/30">

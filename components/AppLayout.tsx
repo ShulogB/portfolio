@@ -1,14 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
+import { usePortfolioContent } from "@/context/PortfolioContentContext";
 import Sidebar from "./Sidebar";
 import Hero from "./Hero";
 import ResumeSection from "./ResumeSection";
 import CollapsibleSection from "./CollapsibleSection";
 import ExecutiveSnapshot from "./ExecutiveSnapshot";
 import ExperienceSummary from "./ExperienceSummary";
+import PrinciplesFromPortfolio from "./PrinciplesFromPortfolio";
+import DecisionsFromPortfolio from "./DecisionsFromPortfolio";
+import OptimizeForSection from "./OptimizeForSection";
 import CaseStudiesPanel from "./CaseStudiesPanel";
 import StackTags from "./StackTags";
 import ArchitectureSectionContent from "./ArchitectureSectionContent";
@@ -17,7 +21,7 @@ import HomeCarousel from "./HomeCarousel";
 import ProductionBackendsSection from "./ProductionBackendsSection";
 import { ADMIN_LOGIN_URL } from "@/lib/api";
 import { GITHUB_URL, LINKEDIN_URL } from "@/lib/site";
-import type { CaseStudyForCarousel } from "@/lib/caseStudyApi";
+import { caseStudiesToCarouselItems } from "@/lib/portfolioContentApi";
 
 type SectionId =
   | "home"
@@ -38,10 +42,7 @@ const SECTION_IDS: SectionId[] = [
   "contact",
 ];
 
-const PROJECT_SLUGS = ["patagonia-dreams", "municipal-identity", "payment-orchestrator"];
-
 const DEFAULT_SECTION: SectionId = "experience";
-const DEFAULT_PROJECT = "patagonia-dreams";
 
 function parseSection(param: string | null): SectionId {
   if (param && SECTION_IDS.includes(param as SectionId)) return param as SectionId;
@@ -49,16 +50,13 @@ function parseSection(param: string | null): SectionId {
   return "home";
 }
 
-function parseProject(param: string | null): string {
-  if (param && PROJECT_SLUGS.includes(param)) return param;
-  return DEFAULT_PROJECT;
+function parseProject(param: string | null, slugs: string[]): string {
+  if (param && slugs.includes(param)) return param;
+  return slugs[0] ?? "";
 }
 
-type AppLayoutProps = {
-  caseStudiesForCarousel?: CaseStudyForCarousel[];
-};
-
-export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProps) {
+export default function AppLayout() {
+  const portfolio = usePortfolioContent();
   const { content, lang } = useLanguage();
   const ui = content.ui;
   const searchParams = useSearchParams();
@@ -66,10 +64,34 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
   const pathname = usePathname();
   const mainRef = useRef<HTMLElement>(null);
 
+  const projectSlugs = useMemo(
+    () =>
+      [...portfolio.case_studies]
+        .map((c) => c.slug)
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b)),
+    [portfolio.case_studies]
+  );
+
+  const caseStudyLabels = useMemo(() => {
+    const m: Record<string, string> = {};
+    portfolio.case_studies.forEach((c) => {
+      m[c.slug] = lang === "es" && c.title_es ? c.title_es : c.title || c.slug;
+    });
+    return m;
+  }, [portfolio.case_studies, lang]);
+
+  const caseStudiesForCarousel = useMemo(
+    () => caseStudiesToCarouselItems(portfolio.case_studies),
+    [portfolio.case_studies]
+  );
+
+  const defaultProject = projectSlugs[0] ?? "";
+
   // Estado inicial fijo para evitar mismatch de hidratación (server vs client).
   // Después del montaje sincronizamos con la URL.
   const [expandedSection, setExpandedSection] = useState<SectionId>(DEFAULT_SECTION);
-  const [selectedCaseStudySlug, setSelectedCaseStudySlug] = useState<string>(DEFAULT_PROJECT);
+  const [selectedCaseStudySlug, setSelectedCaseStudySlug] = useState<string>(defaultProject);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -79,10 +101,17 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
   useEffect(() => {
     if (!hydrated) return;
     const section = parseSection(searchParams.get("section"));
-    const project = parseProject(searchParams.get("project"));
+    const project = parseProject(searchParams.get("project"), projectSlugs);
     setExpandedSection(section);
-    setSelectedCaseStudySlug(project);
-  }, [hydrated, searchParams]);
+    setSelectedCaseStudySlug(project || defaultProject);
+  }, [hydrated, searchParams, projectSlugs, defaultProject]);
+
+  useEffect(() => {
+    if (projectSlugs.length === 0) return;
+    if (!projectSlugs.includes(selectedCaseStudySlug)) {
+      setSelectedCaseStudySlug(projectSlugs[0]);
+    }
+  }, [projectSlugs, selectedCaseStudySlug]);
 
   const updateUrl = useCallback(
     (section: SectionId, project: string) => {
@@ -103,7 +132,7 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
         return;
       }
       const project =
-        section === "case-studies" ? selectedCaseStudySlug : DEFAULT_PROJECT;
+        section === "case-studies" ? (selectedCaseStudySlug || defaultProject) : defaultProject;
       setExpandedSection(section);
       if (section === "case-studies") setSelectedCaseStudySlug(project);
       updateUrl(section, project);
@@ -117,7 +146,7 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
       };
       setTimeout(scrollToSection, 200);
     },
-    [selectedCaseStudySlug, updateUrl]
+    [selectedCaseStudySlug, updateUrl, defaultProject]
   );
 
   const handleCaseStudyClick = useCallback(
@@ -145,6 +174,8 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
     <div className="min-h-screen flex flex-col">
       <div className="flex flex-1 min-h-0">
         <Sidebar
+          caseStudySlugs={projectSlugs}
+          caseStudyLabels={caseStudyLabels}
           labels={sidebarLabels}
           expandedSection={expandedSection}
           selectedCaseStudySlug={selectedCaseStudySlug}
@@ -163,6 +194,9 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
         >
           <ExecutiveSnapshot />
           <ExperienceSummary />
+          <PrinciplesFromPortfolio />
+          <DecisionsFromPortfolio />
+          <OptimizeForSection />
         </CollapsibleSection>
         <CollapsibleSection
           id="case-studies"
@@ -198,10 +232,7 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
           onHeaderClick={() => handleSectionClick("stack")}
           centered
         >
-          <StackTags
-            itemsPrincipal={content.stack}
-            itemsComplementary={content.stackComplementary}
-          />
+          <StackTags />
         </CollapsibleSection>
         <CollapsibleSection
           id="contact"

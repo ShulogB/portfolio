@@ -11,4 +11,5 @@ export const API_ENDPOINTS = {
   contact: `${API_BASE}/api/v1/contact/`,
   track: `${API_BASE}/api/v1/track/`,
   caseStudies: `${API_BASE}/api/v1/case-studies/`,
+  portfolioContent: `${API_BASE}/api/v1/portfolio-content/`,
 } as const;

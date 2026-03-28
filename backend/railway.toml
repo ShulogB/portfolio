@@ -3,7 +3,6 @@ builder = "DOCKERFILE"
 dockerfilePath = "backend/Dockerfile"
 
 [deploy]
-preDeployCommand = "echo 'preDeploy handled in container entrypoint'"
 healthcheckPath = "/api/v1/health/"
 healthcheckTimeout = 120
 restartPolicyType = "on_failure"

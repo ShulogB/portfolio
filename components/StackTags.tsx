@@ -1,6 +1,8 @@
 "use client";
 
 import { useLanguage } from "@/context/LanguageContext";
+import { usePortfolioContent } from "@/context/PortfolioContentContext";
+import { orderedTechnologies } from "@/lib/portfolioContentApi";
 import {
   SiPostgresql,
   SiDjango,
@@ -31,7 +33,8 @@ const ICON_MAP: Record<string, IconType> = {
 };
 
 type StackTagsProps = {
-  itemsPrincipal: string[];
+  /** Si se pasan, se usan en lugar de la API (tests / story). */
+  itemsPrincipal?: string[];
   itemsComplementary?: string[];
 };
 
@@ -56,8 +59,18 @@ function TagList({ items }: { items: string[] }) {
   );
 }
 
-export default function StackTags({ itemsPrincipal, itemsComplementary = [] }: StackTagsProps) {
+export default function StackTags({ itemsPrincipal: itemsPrincipalProp, itemsComplementary: itemsComplementaryProp }: StackTagsProps) {
   const { lang } = useLanguage();
+  const portfolio = usePortfolioContent();
+  const fromApi = orderedTechnologies(portfolio).map((row) =>
+    lang === "es" && row.name_es ? row.name_es : row.name
+  );
+  const itemsPrincipal = itemsPrincipalProp ?? fromApi;
+  const itemsComplementary = itemsComplementaryProp ?? [];
+
+  if (itemsPrincipal.length === 0 && itemsComplementary.length === 0) {
+    return null;
+  }
 
   return (
     <div className="space-y-5 w-full">

@@ -1,7 +1,8 @@
 "use client";
 
 import { useLanguage } from "@/context/LanguageContext";
-import type { ExperienceSummaryItem } from "@/lib/content";
+import { usePortfolioContent } from "@/context/PortfolioContentContext";
+import { orderedExperienceSummary } from "@/lib/portfolioContentApi";
 
 function LabelBlock({
   label,
@@ -23,8 +24,32 @@ function LabelBlock({
 }
 
 export default function ExperienceSummary() {
-  const { content } = useLanguage();
-  const items = content.experienceSummary as ExperienceSummaryItem[];
+  const { lang } = useLanguage();
+  const portfolio = usePortfolioContent();
+  const items = orderedExperienceSummary(portfolio).map((row) => {
+    if (lang === "es") {
+      return {
+        scope: row.scope_es || row.scope,
+        challenge: row.challenge_es || row.challenge,
+        decision: row.decision_es || row.decision,
+        impact: row.impact_es || row.impact,
+      };
+    }
+    return {
+      scope: row.scope,
+      challenge: row.challenge,
+      decision: row.decision,
+      impact: row.impact,
+    };
+  });
+
+  const L = {
+    challenge: lang === "es" ? "Desafío" : "Challenge",
+    decision: lang === "es" ? "Decisión" : "Decision",
+    impact: lang === "es" ? "Impacto" : "Impact",
+  };
+
+  if (items.length === 0) return null;
 
   return (
     <ul className="divide-y divide-sega-cyan/30">
@@ -37,11 +62,11 @@ export default function ExperienceSummary() {
             {item.scope}
           </p>
           <div className="space-y-4">
-            <LabelBlock label="Challenge">{item.challenge}</LabelBlock>
-            <LabelBlock label="Decision">{item.decision}</LabelBlock>
+            <LabelBlock label={L.challenge}>{item.challenge}</LabelBlock>
+            <LabelBlock label={L.decision}>{item.decision}</LabelBlock>
             <div className="space-y-1">
               <p className="font-pixel text-[10px] text-sega-yellow">
-                Impact
+                {L.impact}
               </p>
               <p className="text-sm leading-relaxed text-sega-white/90 bg-sega-bg-dark border-2 border-sega-cyan/50 px-3 py-2 font-reading">
                 {item.impact}
