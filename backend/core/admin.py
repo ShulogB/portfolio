@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
-from .admin_utils import CopyEnToEsMixin, _admin_display_es_or_en
+from .admin_utils import CopyEnToEsMixin, RevalidateHomeOnSaveMixin, _admin_display_es_or_en
 from .models import (
     ContactSubmission,
     PageView,
@@ -19,7 +19,7 @@ from .models import (
 
 
 @admin.register(ExperienceSummary)
-class ExperienceSummaryAdmin(CopyEnToEsMixin, admin.ModelAdmin):
+class ExperienceSummaryAdmin(RevalidateHomeOnSaveMixin, CopyEnToEsMixin, admin.ModelAdmin):
     change_list_description = _(
         "Experience summaries by scope (challenge, decision, impact). "
         "They appear in the «Experience summary» section of the portfolio."
@@ -47,7 +47,7 @@ class ExperienceSummaryAdmin(CopyEnToEsMixin, admin.ModelAdmin):
 
 
 @admin.register(Principle)
-class PrincipleAdmin(CopyEnToEsMixin, admin.ModelAdmin):
+class PrincipleAdmin(RevalidateHomeOnSaveMixin, CopyEnToEsMixin, admin.ModelAdmin):
     change_list_description = _(
         "Engineering principles (single source of truth, trust boundaries, idempotency, etc.). "
         "They appear in the «Principles» section of the portfolio."
@@ -70,7 +70,7 @@ class PrincipleAdmin(CopyEnToEsMixin, admin.ModelAdmin):
 
 
 @admin.register(Technology)
-class TechnologyAdmin(CopyEnToEsMixin, admin.ModelAdmin):
+class TechnologyAdmin(RevalidateHomeOnSaveMixin, CopyEnToEsMixin, admin.ModelAdmin):
     change_list_description = _(
         "Technologies and tools in your stack. "
         "They appear in the «Stack» (Technologies & Integrations) section of the portfolio."
@@ -93,7 +93,7 @@ class TechnologyAdmin(CopyEnToEsMixin, admin.ModelAdmin):
 
 
 @admin.register(ExecutiveSnapshot)
-class ExecutiveSnapshotAdmin(CopyEnToEsMixin, admin.ModelAdmin):
+class ExecutiveSnapshotAdmin(RevalidateHomeOnSaveMixin, CopyEnToEsMixin, admin.ModelAdmin):
     change_list_description = _(
         "Phrases or bullets for the executive summary. "
         "They appear in the «Executive snapshot» section of the portfolio."
@@ -116,7 +116,7 @@ class ExecutiveSnapshotAdmin(CopyEnToEsMixin, admin.ModelAdmin):
 
 
 @admin.register(Decision)
-class DecisionAdmin(CopyEnToEsMixin, admin.ModelAdmin):
+class DecisionAdmin(RevalidateHomeOnSaveMixin, CopyEnToEsMixin, admin.ModelAdmin):
     change_list_description = _(
         "Engineering decisions (short list on the site). "
         "They appear in the «Decisions» section of the portfolio."
@@ -139,7 +139,7 @@ class DecisionAdmin(CopyEnToEsMixin, admin.ModelAdmin):
 
 
 @admin.register(Tradeoff)
-class TradeoffAdmin(CopyEnToEsMixin, admin.ModelAdmin):
+class TradeoffAdmin(RevalidateHomeOnSaveMixin, CopyEnToEsMixin, admin.ModelAdmin):
     change_list_description = _(
         "Explicit trade-offs: what was decided, gained, and sacrificed. "
         "They appear in the «Explicit tradeoffs» section of the portfolio."
@@ -166,7 +166,7 @@ class TradeoffAdmin(CopyEnToEsMixin, admin.ModelAdmin):
 
 
 @admin.register(DeepDiveEssay)
-class DeepDiveEssayAdmin(CopyEnToEsMixin, admin.ModelAdmin):
+class DeepDiveEssayAdmin(RevalidateHomeOnSaveMixin, CopyEnToEsMixin, admin.ModelAdmin):
     change_list_description = _(
         "Long essay for the «Architecture & Design (deep dive)» section. "
         "It appears in the portfolio as the main text explaining your approach to architecture and design."
@@ -188,7 +188,7 @@ class DeepDiveEssayAdmin(CopyEnToEsMixin, admin.ModelAdmin):
 
 
 @admin.register(OptimizeFor)
-class OptimizeForAdmin(CopyEnToEsMixin, admin.ModelAdmin):
+class OptimizeForAdmin(RevalidateHomeOnSaveMixin, CopyEnToEsMixin, admin.ModelAdmin):
     change_list_description = _(
         "«Optimize for» items (what you prioritize: correctness, observability, etc.). "
         "They appear in the «Optimize for» section of the portfolio."

@@ -1,39 +1,9 @@
-import json
-import urllib.error
-import urllib.request
-from django.conf import settings
 from django.contrib import admin
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from core.admin_utils import CopyEnToEsMixin, _admin_display_es_or_en
+from core.revalidate_frontend import trigger_frontend_revalidate
 from .models import CaseStudy, CaseStudyImage, EngineeringDecision
-
-
-def _trigger_revalidate(slug: str) -> None:
-    """Llama al endpoint de revalidación del frontend (Next.js) si REVALIDATION_SECRET está definido."""
-    secret = getattr(settings, "REVALIDATION_SECRET", None) or ""
-    if not secret:
-        return
-    base = (getattr(settings, "FRONTEND_URL", "") or "").rstrip("/")
-    if not base:
-        return
-    url = f"{base}/api/revalidate"
-    data = json.dumps({"slug": slug}).encode("utf-8")
-    req = urllib.request.Request(
-        url,
-        data=data,
-        method="POST",
-        headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {secret}",
-        },
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            if resp.status != 200:
-                pass  # opcional: logging
-    except (urllib.error.URLError, OSError):
-        pass  # no bloquear el admin si el front no responde
 
 
 class EngineeringDecisionInline(admin.TabularInline):
@@ -115,7 +85,7 @@ class CaseStudyAdmin(CopyEnToEsMixin, admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
         if obj.slug:
-            _trigger_revalidate(obj.slug)
+            trigger_frontend_revalidate(case_study_slug=obj.slug)
 
 
 @admin.register(EngineeringDecision)
@@ -140,6 +110,11 @@ class EngineeringDecisionAdmin(CopyEnToEsMixin, admin.ModelAdmin):
 
     def get_translate_field_pairs(self):
         return [("title", "title_es"), ("description", "description_es"), ("tradeoffs", "tradeoffs_es")]
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        if obj.case_study_id:
+            trigger_frontend_revalidate(case_study_slug=obj.case_study.slug)
 
 
 @admin.register(CaseStudyImage)
@@ -179,3 +154,8 @@ class CaseStudyImageAdmin(admin.ModelAdmin):
         return (obj.caption or "—")[:50]
 
     caption_preview.short_description = _("Caption")
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        if obj.case_study_id:
+            trigger_frontend_revalidate(case_study_slug=obj.case_study.slug)

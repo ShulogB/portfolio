@@ -209,3 +209,13 @@ class CopyEnToEsMixin:
                     current_app=self.admin_site.name,
                 )
         return super().change_view(request, object_id, form_url, extra_context)
+
+
+class RevalidateHomeOnSaveMixin:
+    """Después de guardar, avisa al frontend para revalidar la home (contenido desde API)."""
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        from core.revalidate_frontend import trigger_frontend_revalidate
+
+        trigger_frontend_revalidate(case_study_slug=None)
