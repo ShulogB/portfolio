@@ -1,60 +1,47 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
-import { usePortfolioContent } from "@/context/PortfolioContentContext";
 import CaseStudyCard from "./CaseStudyCard";
-import type { CaseStudyHomeRow } from "@/lib/portfolioContentApi";
-import type { AdrLink } from "@/lib/content";
+import { API_ENDPOINTS } from "@/lib/api";
+import { getProjectBySlug } from "@/lib/projects";
+import type { CaseStudyCardContent } from "@/lib/content";
+
+const CASE_STUDY_LABELS: Record<string, string> = {
+  "patagonia-dreams": "Patagonia Dreams",
+  "municipal-identity": "Municipal Identity",
+  "payment-orchestrator": "Payment Orchestrator",
+};
+
+const SLUGS = ["patagonia-dreams", "municipal-identity", "payment-orchestrator"] as const;
 
 type CaseStudiesPanelProps = {
   selectedSlug: string;
   onSelect: (slug: string) => void;
 };
 
-function normalizeAdrs(raw: unknown): AdrLink[] {
-  if (!Array.isArray(raw)) return [];
-  return raw
-    .map((item) => {
-      if (item && typeof item === "object" && "title" in item && "href" in item) {
-        const o = item as { title?: string; href?: string };
-        return { title: String(o.title ?? ""), href: String(o.href ?? "#") };
-      }
-      return null;
-    })
-    .filter((x): x is AdrLink => !!x && !!x.title);
-}
-
-function diagramFromRow(row: CaseStudyHomeRow): "payments" | "identity" | undefined {
-  const d = row.diagram_type;
-  return d === "payments" || d === "identity" ? d : undefined;
-}
-
 export default function CaseStudiesPanel({ selectedSlug, onSelect }: CaseStudiesPanelProps) {
-  const { lang } = useLanguage();
-  const portfolio = usePortfolioContent();
-  const rows = [...portfolio.case_studies].sort((a, b) => a.slug.localeCompare(b.slug));
+  const { content } = useLanguage();
+  const caseStudies = content.caseStudies as CaseStudyCardContent[];
+  const [imageBySlug, setImageBySlug] = useState<Record<string, string>>({});
 
-  const labels: Record<string, string> = {};
-  rows.forEach((r) => {
-    labels[r.slug] =
-      lang === "es" && r.title_es ? r.title_es : r.title || r.slug;
-  });
+  useEffect(() => {
+    fetch(API_ENDPOINTS.caseStudies)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { results?: Array<{ slug: string; image_url: string | null }> } | Array<{ slug: string; image_url: string | null }> | null) => {
+        const list = Array.isArray(data) ? data : data?.results;
+        if (!Array.isArray(list)) return;
+        const map: Record<string, string> = {};
+        list.forEach((item) => {
+          if (item.slug && item.image_url) map[item.slug] = item.image_url;
+        });
+        setImageBySlug(map);
+      })
+      .catch(() => {});
+  }, []);
 
-  const selected: CaseStudyHomeRow | undefined =
-    rows.find((c) => c.slug === selectedSlug) ?? rows[0];
-
-  const title =
-    selected && (lang === "es" && selected.title_es ? selected.title_es : selected.title);
-  const tech =
-    selected && (lang === "es" && selected.tech_es ? selected.tech_es : selected.tech);
-  const preview =
-    selected &&
-    (lang === "es" && selected.summary_es ? selected.summary_es : selected.summary);
-  const image =
-    selected?.image_url ||
-    (selected?.images?.[0]?.url ?? undefined);
-  const externalUrl =
-    selected?.live_url && selected.live_url !== "#" ? selected.live_url : undefined;
+  const selected = caseStudies.find((c) => c.slug === selectedSlug) ?? caseStudies[0];
+  const selectedImage = selected ? imageBySlug[selected.slug] ?? selected.image : undefined;
 
   return (
     <div className="space-y-6">
@@ -63,34 +50,41 @@ export default function CaseStudiesPanel({ selectedSlug, onSelect }: CaseStudies
         role="tablist"
         aria-label="Case studies"
       >
-        {rows.map((row) => (
+        {SLUGS.map((slug) => (
           <button
-            key={row.slug}
+            key={slug}
             type="button"
             role="tab"
-            aria-selected={selectedSlug === row.slug}
-            onClick={() => onSelect(row.slug)}
+            aria-selected={selectedSlug === slug}
+            onClick={() => onSelect(slug)}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              selectedSlug === row.slug
+              selectedSlug === slug
                 ? "bg-sega-cyan/20 text-sega-cyan"
                 : "text-sega-white/60 hover:text-sega-white"
             }`}
           >
-            {labels[row.slug] ?? row.slug}
+            {CASE_STUDY_LABELS[slug]}
           </button>
         ))}
       </div>
       <div className="max-w-2xl">
-        {selected && title && (
+        {selected && (
           <CaseStudyCard
             slug={selected.slug}
-            title={title}
-            tech={tech || ""}
-            preview={preview || ""}
-            image={image}
-            diagramType={diagramFromRow(selected)}
-            adrs={normalizeAdrs(selected.adrs)}
-            externalUrl={externalUrl}
+            title={selected.title}
+            tech={selected.tech}
+            preview={selected.preview}
+            image={selectedImage}
+            diagramType={selected.diagramType}
+            adrs={selected.adrs}
+            externalUrl={
+              (() => {
+                const project = getProjectBySlug(selected.slug);
+                return project?.externalUrl && project.externalUrl !== "#"
+                  ? project.externalUrl
+                  : undefined;
+              })()
+            }
           />
         )}
       </div>

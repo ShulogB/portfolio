@@ -1,17 +1,12 @@
 "use client";
 
 import AppLayout from "./AppLayout";
-import { PortfolioContentProvider } from "@/context/PortfolioContentContext";
-import type { PortfolioContent } from "@/lib/portfolioContentApi";
+import type { CaseStudyForCarousel } from "@/lib/caseStudyApi";
 
 type HomeContentProps = {
-  portfolio: PortfolioContent;
+  caseStudies?: CaseStudyForCarousel[];
 };
 
-export default function HomeContent({ portfolio }: HomeContentProps) {
-  return (
-    <PortfolioContentProvider value={portfolio}>
-      <AppLayout />
-    </PortfolioContentProvider>
-  );
+export default function HomeContent({ caseStudies = [] }: HomeContentProps) {
+  return <AppLayout caseStudiesForCarousel={caseStudies} />;
 }

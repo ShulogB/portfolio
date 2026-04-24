@@ -2,49 +2,18 @@
 
 import { useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
-import { usePortfolioContent } from "@/context/PortfolioContentContext";
-import { orderedDeepDiveEssays, orderedTradeoffs } from "@/lib/portfolioContentApi";
+import type { TradeoffItem } from "@/lib/content";
 
 const TRADEOFFS_INDEX = 0;
 
 export default function ArchitectureSectionContent() {
-  const { content, lang } = useLanguage();
-  const portfolio = usePortfolioContent();
+  const { content } = useLanguage();
+  const essays = content.deepDiveEssays as { title: string; paragraphs: string[] }[];
+  const tradeoffs = content.explicitTradeoffs as TradeoffItem[];
   const tradeoffsTitle = content.ui.sections.explicitTradeoffs;
-
-  const tradeoffs = orderedTradeoffs(portfolio).map((row) =>
-    lang === "es"
-      ? {
-          decision: row.decision_es || row.decision,
-          gained: row.gained_es || row.gained,
-          sacrificed: row.sacrificed_es || row.sacrificed,
-        }
-      : {
-          decision: row.decision,
-          gained: row.gained,
-          sacrificed: row.sacrificed,
-        }
-  );
-
-  const essays = orderedDeepDiveEssays(portfolio).map((row) => ({
-    title: lang === "es" && row.title_es ? row.title_es : row.title,
-    paragraphs:
-      lang === "es" && row.paragraphs_es?.length
-        ? row.paragraphs_es
-        : row.paragraphs?.length
-          ? row.paragraphs
-          : [],
-  }));
-
-  const [selectedIndex, setSelectedIndex] = useState(() =>
-    tradeoffs.length > 0 ? TRADEOFFS_INDEX : essays.length > 0 ? 1 : TRADEOFFS_INDEX
-  );
+  const [selectedIndex, setSelectedIndex] = useState(TRADEOFFS_INDEX);
   const isTradeoffs = selectedIndex === TRADEOFFS_INDEX;
   const selectedEssay = !isTradeoffs ? essays[selectedIndex - 1] : null;
-
-  if (tradeoffs.length === 0 && essays.length === 0) {
-    return null;
-  }
 
   return (
     <div className="flex gap-8">
@@ -53,7 +22,6 @@ export default function ArchitectureSectionContent() {
         aria-label="Architecture topics"
       >
         <ul className="space-y-0.5 text-xs font-pixel">
-          {tradeoffs.length > 0 && (
           <li>
             <button
               type="button"
@@ -67,9 +35,8 @@ export default function ArchitectureSectionContent() {
               {tradeoffsTitle}
             </button>
           </li>
-          )}
           {essays.map((essay, i) => (
-            <li key={`${essay.title}-${i}`}>
+            <li key={essay.title}>
               <button
                 type="button"
                 onClick={() => setSelectedIndex(i + 1)}
@@ -86,7 +53,7 @@ export default function ArchitectureSectionContent() {
         </ul>
       </nav>
       <div className="min-w-0 flex-1">
-        {isTradeoffs && tradeoffs.length > 0 ? (
+        {isTradeoffs ? (
           <article>
             <h3 className="font-pixel text-xs text-sega-yellow mb-4">
               {tradeoffsTitle}
@@ -101,7 +68,7 @@ export default function ArchitectureSectionContent() {
               ))}
             </ul>
           </article>
-        ) : selectedEssay && selectedEssay.paragraphs.length > 0 ? (
+        ) : selectedEssay && (
           <article>
             <h3 className="font-pixel text-xs text-sega-yellow mb-4">
               {selectedEssay.title}
@@ -112,7 +79,7 @@ export default function ArchitectureSectionContent() {
               ))}
             </div>
           </article>
-        ) : null}
+        )}
       </div>
     </div>
   );

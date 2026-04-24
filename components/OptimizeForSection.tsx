@@ -1,18 +1,11 @@
 "use client";
 
 import { useLanguage } from "@/context/LanguageContext";
-import { usePortfolioContent } from "@/context/PortfolioContentContext";
-import { orderedOptimizeFor } from "@/lib/portfolioContentApi";
+import type { OptimizeForItem } from "@/lib/content";
 
 export default function OptimizeForSection() {
-  const { lang } = useLanguage();
-  const portfolio = usePortfolioContent();
-  const items = orderedOptimizeFor(portfolio).map((row) => ({
-    title: lang === "es" && row.title_es ? row.title_es : row.title,
-    explanation: lang === "es" && row.explanation_es ? row.explanation_es : row.explanation,
-  }));
-
-  if (items.length === 0) return null;
+  const { content } = useLanguage();
+  const items = content.optimizeFor as OptimizeForItem[];
 
   return (
     <ul className="space-y-4">

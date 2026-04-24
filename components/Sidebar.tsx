@@ -2,6 +2,14 @@
 
 import { usePathname } from "next/navigation";
 
+const CASE_STUDY_LABELS: Record<string, string> = {
+  "patagonia-dreams": "Patagonia Dreams",
+  "municipal-identity": "Municipal Identity",
+  "payment-orchestrator": "Payment Orchestrator",
+};
+
+const CASE_STUDY_SLUGS = ["patagonia-dreams", "municipal-identity", "payment-orchestrator"] as const;
+
 type SectionId =
   | "home"
   | "experience"
@@ -12,8 +20,6 @@ type SectionId =
   | "contact";
 
 type SidebarProps = {
-  caseStudySlugs: string[];
-  caseStudyLabels: Record<string, string>;
   labels: {
     name: string;
     role: string;
@@ -65,8 +71,6 @@ function NavLink({
 }
 
 export default function Sidebar({
-  caseStudySlugs,
-  caseStudyLabels,
   labels,
   expandedSection,
   selectedCaseStudySlug,
@@ -74,7 +78,6 @@ export default function Sidebar({
   onCaseStudyClick,
 }: SidebarProps) {
   const isCaseStudiesExpanded = expandedSection === "case-studies";
-  const projectParam = selectedCaseStudySlug || caseStudySlugs[0] || "_";
 
   return (
     <aside
@@ -109,7 +112,7 @@ export default function Sidebar({
           <li>
             <NavLink
               section="experience"
-              project={projectParam}
+              project="patagonia-dreams"
               isActive={expandedSection === "experience"}
               onClick={() => onSectionClick("experience")}
               className={`block w-full text-left py-2.5 px-3 border-l-2 transition-colors cursor-pointer ${
@@ -124,7 +127,7 @@ export default function Sidebar({
           <li>
             <NavLink
               section="case-studies"
-              project={projectParam}
+              project={selectedCaseStudySlug}
               isActive={expandedSection === "case-studies"}
               onClick={() => onSectionClick("case-studies")}
               className={`block w-full text-left py-2.5 px-3 border-l-2 transition-colors cursor-pointer ${
@@ -135,9 +138,9 @@ export default function Sidebar({
             >
               {labels.caseStudies}
             </NavLink>
-            {isCaseStudiesExpanded && caseStudySlugs.length > 0 && (
+            {isCaseStudiesExpanded && (
               <ul className="mt-1 ml-3 space-y-0.5 border-l-2 border-sega-cyan/50 pl-3">
-                {caseStudySlugs.map((slug) => (
+                {CASE_STUDY_SLUGS.map((slug) => (
                   <li key={slug}>
                     <NavLink
                       section="case-studies"
@@ -150,7 +153,7 @@ export default function Sidebar({
                           : "text-sega-muted hover:text-sega-cyan"
                       }`}
                     >
-                      {caseStudyLabels[slug] ?? slug}
+                      {CASE_STUDY_LABELS[slug]}
                     </NavLink>
                   </li>
                 ))}
@@ -160,7 +163,7 @@ export default function Sidebar({
           <li>
             <NavLink
               section="how-build"
-              project={projectParam}
+              project={selectedCaseStudySlug}
               isActive={expandedSection === "how-build"}
               onClick={() => onSectionClick("how-build")}
               className={`block w-full text-left py-2.5 px-3 border-l-2 transition-colors cursor-pointer ${
@@ -175,7 +178,7 @@ export default function Sidebar({
           <li>
             <NavLink
               section="architecture"
-              project={projectParam}
+              project={selectedCaseStudySlug}
               isActive={expandedSection === "architecture"}
               onClick={() => onSectionClick("architecture")}
               className={`block w-full text-left py-2.5 px-3 border-l-2 transition-colors cursor-pointer ${
@@ -190,7 +193,7 @@ export default function Sidebar({
           <li>
             <NavLink
               section="stack"
-              project={projectParam}
+              project={selectedCaseStudySlug}
               isActive={expandedSection === "stack"}
               onClick={() => onSectionClick("stack")}
               className={`block w-full text-left py-2.5 px-3 border-l-2 transition-colors cursor-pointer ${
@@ -205,7 +208,7 @@ export default function Sidebar({
           <li>
             <NavLink
               section="contact"
-              project={projectParam}
+              project={selectedCaseStudySlug}
               isActive={expandedSection === "contact"}
               onClick={() => onSectionClick("contact")}
               className={`block w-full text-left py-2.5 px-3 border-l-2 transition-colors cursor-pointer ${

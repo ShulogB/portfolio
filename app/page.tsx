@@ -1,7 +1,7 @@
 import HomeContent from "@/components/HomeContent";
-import { getPortfolioContent } from "@/lib/portfolioContentApi";
+import { getCaseStudiesForCarousel } from "@/lib/caseStudyApi";
 
 export default async function Home() {
-  const portfolio = await getPortfolioContent();
-  return <HomeContent portfolio={portfolio} />;
+  const caseStudies = await getCaseStudiesForCarousel();
+  return <HomeContent caseStudies={caseStudies} />;
 }
