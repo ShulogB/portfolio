@@ -5,10 +5,62 @@
 import type { AdrLink, ExperienceSummaryItem, OptimizeForItem, ProductionDecision, TradeoffItem, UILabels } from "./content-types";
 
 const uiEs = {
-  hero: { tagline: "Portfolio enfocado en system design", caseStudies: "Estudios de caso", github: "GitHub", linkedin: "LinkedIn", downloadResume: "Descargar CV (PDF)" },
-  sections: { home: "Inicio", executiveSnapshot: "Resumen ejecutivo", experienceSummary: "Impacto y experiencia", caseStudies: "Estudios de caso", principles: "Principios de ingeniería", howBuild: "Cómo construyo backends de producción", architectureDeepDive: "Arquitectura y diseño", explicitTradeoffs: "Tradeoffs explícitos", decisions: "Decisiones de ingeniería", stack: "Tecnologías e integraciones", optimizeFor: "Qué optimizo", contact: "Contacto" },
-  contact: { name: "Nombre", email: "Email", message: "Mensaje", send: "Enviar", successMessage: "Mensaje enviado. Te responderé pronto.", errorMessage: "No se pudo enviar. Reintentá o escribime por email." },
-  caseStudy: { label: "Estudio de caso", scaleConstraints: "Escala y restricciones", rejected: "Qué se rechazó explícitamente", whatWouldBreak: "Qué rompería este sistema?", architectureDecisionRecords: "Architecture Decision Records", architectureAndDecisions: "Arquitectura y decisiones", scaleConstraintsRows: { requestVolume: "Volumen de requests", concurrency: "Concurrencia", externalDependencies: "Dependencias externas", failureModes: "Modos de fallo", dataConsistency: "Consistencia de datos" }, gainedLabel: "Ganado:", sacrificedLabel: "Sacrificado:" },
+  hero: {
+    tagline: "Ingeniero backend — sistemas en producción",
+    caseStudies: "Estudios de caso",
+    viewProjects: "Ver proyectos",
+    github: "GitHub",
+    linkedin: "LinkedIn",
+    downloadResume: "Descargar CV (PDF)",
+  },
+  problemsSolved: {
+    context: "Contexto",
+    whatYouDid: "Qué hice",
+    impact: "Impacto",
+  },
+  sections: {
+    home: "Inicio",
+    executiveSnapshot: "Resumen ejecutivo",
+    experienceSummary: "Impacto y experiencia",
+    caseStudies: "Estudios de caso",
+    productionProjects: "Proyectos en producción",
+    problemsSolved: "Problemas que aparecieron y cómo los resolvimos",
+    principles: "Principios de ingeniería",
+    howBuild: "Cómo construyo backends de producción",
+    architectureDeepDive: "Arquitectura y diseño",
+    explicitTradeoffs: "Tradeoffs explícitos",
+    decisions: "Decisiones de ingeniería",
+    stack: "Tecnologías",
+    optimizeFor: "Qué optimizo",
+    contact: "Contacto",
+  },
+  contact: {
+    name: "Nombre",
+    email: "Email",
+    message: "Mensaje",
+    send: "Enviar",
+    successMessage: "Mensaje enviado. Te responderé pronto.",
+    errorMessage: "No se pudo enviar. Reintentá o escribime por email.",
+  },
+  caseStudy: {
+    label: "Estudio de caso",
+    productionProjectLabel: "Proyecto en producción",
+    scaleConstraints: "Escala y restricciones",
+    rejected: "Qué se rechazó explícitamente",
+    whatWouldBreak: "Qué rompería este sistema?",
+    architectureDecisionRecords: "Architecture Decision Records",
+    architectureAndDecisions: "Arquitectura y decisiones",
+    viewDetails: "Leer el detalle técnico",
+    scaleConstraintsRows: {
+      requestVolume: "Volumen de requests",
+      concurrency: "Concurrencia",
+      externalDependencies: "Dependencias externas",
+      failureModes: "Modos de fallo",
+      dataConsistency: "Consistencia de datos",
+    },
+    gainedLabel: "Ganado:",
+    sacrificedLabel: "Sacrificado:",
+  },
   footer: "Sistemas backend para producción.",
   adminLogin: "Admin",
   project: { overview: "Resumen", viewLiveSite: "Ver sitio", deepDive: "Profundización", images: "Imágenes" },
@@ -18,11 +70,63 @@ const es = {
   hero: {
     name: "Giuliano Bentevenga",
     subtitle:
-      "Ingeniero backend senior enfocado en sistemas transaccionales, flujos de pago, gateways de identidad y límites de confianza estrictos. Sistemas en producción pensados para corrección bajo concurrencia y fallas.",
+      "Ingeniero backend con casi cinco años de experiencia; hace dos años lidero el backend de sistemas en producción. Trabajo el ciclo completo: desarrollo, varios entornos de staging, QA y release a producción—no solo tirar a prod. Me mueve la consistencia de datos, la concurrencia, contratos API claros y límites de confianza que aguanten el día a día.",
     location: "Argentina — abierto a remoto",
+    sidebarRole: "Ingeniero backend senior · liderazgo de backend en producción",
     impactLine:
-      "Ingeniero backend de producción: reforcé integridad de pagos ante inputs hostiles, migré integraciones a payloads contract-first y operé APIs secure-by-default con límites de confianza claros.",
+      "Tengo mucha práctica en reservas transaccionales, pagos e identidad, pero lo encaro como fortalezas dentro de un backend más amplio: arquitectura, evolución segura del producto y operación con buena visibilidad.",
   },
+  productionProjectsIntro:
+    "Sistemas en producción donde lidero o lideré el backend. La versión larga está en la página de cada proyecto.",
+  problemResolutions: [
+    {
+      projectTitle: "Patagonia Dreams — plataforma de reservas",
+      items: [
+        {
+          context:
+            "El negocio pedía identificadores con contexto por actividad: un mapeo global hacía que una modalidad ‘contagiara’ otras actividades.",
+          whatYouDid:
+            "Pasamos a mapeo con scope, subimos unicidad crítica a la base con constraints condicionales mientras convivía data legacy, migración aditiva y orden explícito de fallback.",
+          impact:
+            "Menos cruces raros entre actividades y una defensa seria ante concurrencia: el serializer no alcanza si la DB no cierra la regla.",
+        },
+        {
+          context:
+            "Tags, APIs con semántica de reemplazo y un panel externo que cobra por línea: payloads válidos en HTTP igual rompían la lógica comercial.",
+          whatYouDid:
+            "Modelamos tags en M2M real, dejamos claro replace vs incremental, mantuvimos compatibilidad en la transición y usamos logs de decisión + auditoría de payload cuando el externo facturaba mal.",
+          impact:
+            "Contratos más claros para el producto; aislamos un desvío semántico del proveedor y corregimos el mapeo en lugar de quedarnos con el 200.",
+        },
+      ],
+    },
+    {
+      projectTitle: "Gateway de identidad municipal",
+      items: [
+        {
+          context:
+            "Varios servicios necesitaban una identidad de ciudadano sin que cada uno re-llame registros nacionales o duplique verificación.",
+          whatYouDid:
+            "Gateway central emite tokens; el resto valida y aplica RBAC. Claims mínimos, fail safe si caen las APIs nacionales, auditoría donde corresponde.",
+          impact:
+            "Una sola frontera de confianza y menos ‘cada equipo hace su auth’.",
+        },
+      ],
+    },
+    {
+      projectTitle: "Orquestador de pagos (diseño)",
+      items: [
+        {
+          context:
+            "Inicios de pago y webhooks tienen que seguir correctos con reintentos, duplicados y writes concurrentes.",
+          whatYouDid:
+            "Idempotencia en altas de pago, patrón tipo outbox para llamadas a proveedor, webhooks idempotentes por id de evento, transacciones acotadas por transición de estado.",
+          impact:
+            "Los duplicados dejan de ser modo incendio: es la clase de historia que esperan escuchar en entrevistas senior.",
+        },
+      ],
+    },
+  ],
   principles: [
     { title: "Una única fuente de verdad para estado crítico", description: "Un componente es el único escritor del estado de pago e identidad. El frontend no puede mutar estado transaccional o verificado; los sistemas legacy no autentican. Elimina escritores competidores y confianza del lado cliente en el camino crítico." },
     { title: "Límites de confianza explícitos", description: "Definir quién valida, quién emite, quién consume. El gateway llama a las APIs de identidad y emite tokens; los servicios downstream validan tokens y aplican RBAC y no re-autentican. Límite aplicado en código y contratos." },
@@ -41,9 +145,9 @@ const es = {
     {
       slug: "patagonia-dreams",
       title: "Plataforma transaccional de reservas y pagos",
-      tech: "Pagos • Webhooks • Concurrencia",
+      tech: "Django · PostgreSQL · pagos e integración con catálogo",
       preview:
-        "Plataforma de reservas turísticas en producción. Backoffice multi-módulo, multi-tenant (socios y clientes finales). Pagos vía Mercado Pago, Stripe, Pix; webhooks como única fuente de verdad de \"reserva pagada\", con validación HMAC e idempotencia por event_id. Claves de idempotencia en creación de reservas; motor de promociones con claims transaccionales; normalización de catálogo con proveedores externos. Monolito modular, Docker, CI/CD, AWS. Integridad transaccional y seguridad de pagos por diseño.",
+        "Reservas turísticas en producción: pagos, backoffice multi-tenant e integración con proveedores de pago y un panel de actividades. El backend concentra reglas transaccionales, webhooks y releases pasando por staging y QA—no solo el deploy a prod.",
       diagramType: "payments" as const,
       adrs: [
         { title: "Webhooks como única fuente de verdad del estado de pago", href: "#" },
@@ -56,9 +160,9 @@ const es = {
     {
       slug: "municipal-identity",
       title: "Plataforma municipal de identidad unificada",
-      tech: "Identidad • Límites de confianza • RBAC",
+      tech: "Gateway · tokens · validación con registros nacionales",
       preview:
-        "Gateway de autenticación centralizado para un municipio: los ciudadanos se autentican una vez y acceden a múltiples servicios gubernamentales con un único token. La identidad se valida contra registros nacionales (Mi Argentina, RENAPER, AFIP) en cada login; el gateway es el único componente que llama esas APIs y el único emisor de tokens de sesión. Sistemas legacy consumen tokens firmados y aplican RBAC; no re-autentican. Sin PII en tokens; fail safe cuando las APIs nacionales no están disponibles. Auditoría y RBAC en gateway y capa de servicio.",
+        "Estilo SSO municipal: el ciudadano entra una vez y los sistemas consumen tokens emitidos por el gateway. El gateway concentra las llamadas a registros nacionales y deja explícitas las reglas de verificación y el comportamiento cuando esas dependencias no están.",
       diagramType: "identity" as const,
       adrs: [
         { title: "Gateway como único emisor de tokens; sistemas legacy solo validan", href: "#" },
@@ -71,9 +175,9 @@ const es = {
     {
       slug: "payment-orchestrator",
       title: "Orquestador de pagos idempotente",
-      tech: "Arquitectura backend • Sistemas transaccionales",
+      tech: "Idempotencia · flujos tipo outbox · webhooks",
       preview:
-        "Diseñé e implementé un proceso de procesamiento de pagos seguro para reintentos con estrictas garantías de idempotencia en envíos de transacciones concurrentes.",
+        "Ejercicio de diseño: pipeline de pagos tolerante a reintentos—altas idempotentes, llamadas a proveedor desacopladas del request, y aplicación de webhooks sin doble aplicar estado.",
       diagramType: "payments" as const,
       adrs: [
         { title: "Clave de idempotencia requerida para todas las solicitudes de pago", href: "#" },
@@ -137,8 +241,8 @@ const es = {
     "Bloqueo pesimista (SELECT FOR UPDATE) en disponibilidad al crear reserva; doble reserva eliminada en la tasa de conflicto observada.",
     "Identidad validada en cada login; nunca emitir \"verified\" cuando falló la verificación. Modos degradados cuando las APIs nacionales no están.",
   ],
-  stack: ["PostgreSQL", "Django REST Framework", "Docker", "CI/CD", "GitHub Actions", "Stripe", "Mercado Pago", "Cognito"],
-  stackComplementary: ["AWS", "Vercel", "Railway"],
+  stack: ["Python", "Django REST Framework", "PostgreSQL", "Stripe", "Mercado Pago", "Cognito"],
+  stackComplementary: ["Docker", "GitHub Actions", "AWS", "Vercel", "Railway"],
   explicitTradeoffs: [
     { decision: "Webhooks como única fuente de verdad de \"pagado\".", gained: "Ni frontend ni redirect manejan estado; el proveedor es autoridad. Doble aplicación imposible por diseño.", sacrificed: "El usuario espera el webhook; dependemos del envío del proveedor y de nuestro endpoint. No hay \"pagado\" instantáneo desde el redirect." },
     { decision: "Bloqueo pesimista (SELECT FOR UPDATE) en disponibilidad.", gained: "Sin doble reserva; comportamiento determinista en la frontera de consistencia.", sacrificed: "Throughput en slots calientes limitado; contención bajo carga. Sin camino optimista de reintento." },

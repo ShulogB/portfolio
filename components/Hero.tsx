@@ -5,10 +5,10 @@ import { useLanguage } from "@/context/LanguageContext";
 import { GITHUB_URL, LINKEDIN_URL } from "@/lib/site";
 
 type HeroProps = {
-  onCaseStudiesClick?: () => void;
+  onViewProjectsClick?: () => void;
 };
 
-export default function Hero({ onCaseStudiesClick }: HeroProps) {
+export default function Hero({ onViewProjectsClick }: HeroProps) {
   const { content } = useLanguage();
   const { hero, ui } = content;
   return (
@@ -27,17 +27,17 @@ export default function Hero({ onCaseStudiesClick }: HeroProps) {
           {hero.impactLine}
         </p>
         <div className="mt-10 flex flex-wrap gap-3">
-          {onCaseStudiesClick ? (
+          {onViewProjectsClick ? (
             <button
               type="button"
-              onClick={onCaseStudiesClick}
+              onClick={onViewProjectsClick}
               className="font-pixel text-xs border border-sega-cyan/60 bg-sega-cyan/15 px-4 py-2.5 text-sega-cyan hover:bg-sega-cyan/25 hover:shadow-sega-glow transition-all"
             >
-              {ui.hero.caseStudies}
+              {ui.hero.viewProjects}
             </button>
           ) : (
-            <Button href="#case-studies" variant="primary">
-              {ui.hero.caseStudies}
+            <Button href="#projects" variant="primary">
+              {ui.hero.viewProjects}
             </Button>
           )}
           <Button href={GITHUB_URL} variant="secondary" external>

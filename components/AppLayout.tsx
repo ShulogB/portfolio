@@ -3,49 +3,36 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
-import Sidebar from "./Sidebar";
+import Sidebar, { type SectionId } from "./Sidebar";
 import Hero from "./Hero";
 import ResumeSection from "./ResumeSection";
 import CollapsibleSection from "./CollapsibleSection";
-import ExecutiveSnapshot from "./ExecutiveSnapshot";
-import ExperienceSummary from "./ExperienceSummary";
 import CaseStudiesPanel from "./CaseStudiesPanel";
+import ProblemsSolvedSection from "./ProblemsSolvedSection";
 import StackTags from "./StackTags";
-import ArchitectureSectionContent from "./ArchitectureSectionContent";
 import ContactForm from "./ContactForm";
 import HomeCarousel from "./HomeCarousel";
-import ProductionBackendsSection from "./ProductionBackendsSection";
 import { ADMIN_LOGIN_URL } from "@/lib/api";
 import { GITHUB_URL, LINKEDIN_URL } from "@/lib/site";
 import type { CaseStudyForCarousel } from "@/lib/caseStudyApi";
 
-type SectionId =
-  | "home"
-  | "experience"
-  | "case-studies"
-  | "how-build"
-  | "architecture"
-  | "stack"
-  | "contact";
-
-const SECTION_IDS: SectionId[] = [
-  "home",
-  "experience",
-  "case-studies",
-  "how-build",
-  "architecture",
-  "stack",
-  "contact",
-];
+const SECTION_IDS: SectionId[] = ["home", "projects", "problems", "stack", "contact"];
 
 const PROJECT_SLUGS = ["patagonia-dreams", "municipal-identity", "payment-orchestrator"];
 
-const DEFAULT_SECTION: SectionId = "experience";
 const DEFAULT_PROJECT = "patagonia-dreams";
 
+const LEGACY_SECTION_MAP: Record<string, SectionId> = {
+  "case-studies": "projects",
+  experience: "problems",
+  "how-build": "problems",
+  architecture: "problems",
+};
+
 function parseSection(param: string | null): SectionId {
-  if (param && SECTION_IDS.includes(param as SectionId)) return param as SectionId;
-  // Sin params (ej. / al volver de un proyecto) = home
+  if (!param) return "home";
+  if (LEGACY_SECTION_MAP[param]) return LEGACY_SECTION_MAP[param];
+  if (SECTION_IDS.includes(param as SectionId)) return param as SectionId;
   return "home";
 }
 
@@ -66,9 +53,7 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
   const pathname = usePathname();
   const mainRef = useRef<HTMLElement>(null);
 
-  // Estado inicial fijo para evitar mismatch de hidratación (server vs client).
-  // Después del montaje sincronizamos con la URL.
-  const [expandedSection, setExpandedSection] = useState<SectionId>(DEFAULT_SECTION);
+  const [expandedSection, setExpandedSection] = useState<SectionId>("home");
   const [selectedCaseStudySlug, setSelectedCaseStudySlug] = useState<string>(DEFAULT_PROJECT);
   const [hydrated, setHydrated] = useState(false);
 
@@ -102,12 +87,10 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
         mainRef.current?.scrollTo({ top: 0, behavior: "smooth" });
         return;
       }
-      const project =
-        section === "case-studies" ? selectedCaseStudySlug : DEFAULT_PROJECT;
+      const project = section === "projects" ? selectedCaseStudySlug : DEFAULT_PROJECT;
       setExpandedSection(section);
-      if (section === "case-studies") setSelectedCaseStudySlug(project);
+      if (section === "projects") setSelectedCaseStudySlug(project);
       updateUrl(section, project);
-      // Tras la animación de expansión, hacer scroll hasta la sección
       const scrollToSection = () => {
         const el = document.getElementById(section);
         if (!el) return;
@@ -123,20 +106,18 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
   const handleCaseStudyClick = useCallback(
     (slug: string) => {
       setSelectedCaseStudySlug(slug);
-      updateUrl("case-studies", slug);
+      updateUrl("projects", slug);
     },
     [updateUrl]
   );
 
   const sidebarLabels = {
     name: content.hero.name,
-    role: "Senior Backend Engineer",
+    role: content.hero.sidebarRole,
     tagline: content.ui.hero.tagline,
     home: ui.sections.home,
-    experience: ui.sections.experienceSummary,
-    caseStudies: ui.sections.caseStudies,
-    howBuild: ui.sections.howBuild,
-    architecture: ui.sections.architectureDeepDive,
+    productionProjects: ui.sections.productionProjects,
+    problemsSolved: ui.sections.problemsSolved,
     stack: ui.sections.stack,
     contact: ui.sections.contact,
   };
@@ -152,68 +133,47 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
           onCaseStudyClick={handleCaseStudyClick}
         />
         <main ref={mainRef} className="flex-1 min-h-0 ml-[240px] flex flex-col overflow-auto relative z-0">
-        <Hero onCaseStudiesClick={() => handleSectionClick("case-studies")} />
-        <HomeCarousel caseStudies={caseStudiesForCarousel} lang={lang} />
-        <ResumeSection />
-        <CollapsibleSection
-          id="experience"
-          title={ui.sections.experienceSummary}
-          isExpanded={expandedSection === "experience"}
-          onHeaderClick={() => handleSectionClick("experience")}
-        >
-          <ExecutiveSnapshot />
-          <ExperienceSummary />
-        </CollapsibleSection>
-        <CollapsibleSection
-          id="case-studies"
-          title={ui.sections.caseStudies}
-          isExpanded={expandedSection === "case-studies"}
-          onHeaderClick={() => handleSectionClick("case-studies")}
-        >
-          <CaseStudiesPanel
-            selectedSlug={selectedCaseStudySlug}
-            onSelect={handleCaseStudyClick}
-          />
-        </CollapsibleSection>
-        <CollapsibleSection
-          id="how-build"
-          title={ui.sections.howBuild}
-          isExpanded={expandedSection === "how-build"}
-          onHeaderClick={() => handleSectionClick("how-build")}
-        >
-          <ProductionBackendsSection />
-        </CollapsibleSection>
-        <CollapsibleSection
-          id="architecture"
-          title={ui.sections.architectureDeepDive}
-          isExpanded={expandedSection === "architecture"}
-          onHeaderClick={() => handleSectionClick("architecture")}
-        >
-          <ArchitectureSectionContent />
-        </CollapsibleSection>
-        <CollapsibleSection
-          id="stack"
-          title={ui.sections.stack}
-          isExpanded={expandedSection === "stack"}
-          onHeaderClick={() => handleSectionClick("stack")}
-          centered
-        >
-          <StackTags
-            itemsPrincipal={content.stack}
-            itemsComplementary={content.stackComplementary}
-          />
-        </CollapsibleSection>
-        <CollapsibleSection
-          id="contact"
-          title={ui.sections.contact}
-          isExpanded={expandedSection === "contact"}
-          onHeaderClick={() => handleSectionClick("contact")}
-        >
-          <ContactForm source="home" />
-        </CollapsibleSection>
-      </main>
+          <Hero onViewProjectsClick={() => handleSectionClick("projects")} />
+          <HomeCarousel caseStudies={caseStudiesForCarousel} lang={lang} />
+          <ResumeSection />
+          <CollapsibleSection
+            id="projects"
+            title={ui.sections.productionProjects}
+            isExpanded={expandedSection === "projects"}
+            onHeaderClick={() => handleSectionClick("projects")}
+          >
+            <CaseStudiesPanel selectedSlug={selectedCaseStudySlug} onSelect={handleCaseStudyClick} />
+          </CollapsibleSection>
+          <CollapsibleSection
+            id="problems"
+            title={ui.sections.problemsSolved}
+            isExpanded={expandedSection === "problems"}
+            onHeaderClick={() => handleSectionClick("problems")}
+          >
+            <ProblemsSolvedSection />
+          </CollapsibleSection>
+          <CollapsibleSection
+            id="stack"
+            title={ui.sections.stack}
+            isExpanded={expandedSection === "stack"}
+            onHeaderClick={() => handleSectionClick("stack")}
+            centered
+          >
+            <StackTags
+              itemsPrincipal={content.stack}
+              itemsComplementary={content.stackComplementary}
+            />
+          </CollapsibleSection>
+          <CollapsibleSection
+            id="contact"
+            title={ui.sections.contact}
+            isExpanded={expandedSection === "contact"}
+            onHeaderClick={() => handleSectionClick("contact")}
+          >
+            <ContactForm source="home" />
+          </CollapsibleSection>
+        </main>
       </div>
-      {/* Footer full width: misma altura izquierda y derecha, línea continua, tipografía unificada */}
       <footer className="border-t border-sega-cyan/50 flex flex-none font-pixel text-[10px] text-sega-muted min-h-[7.5rem]">
         <div className="w-[240px] shrink-0 flex flex-col justify-center gap-2 py-6 px-4 border-r border-sega-cyan/50">
           <p className="uppercase tracking-wide text-sega-muted leading-relaxed">
@@ -246,7 +206,7 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
               href={GITHUB_URL}
               target="_blank"
               rel="noopener noreferrer"
-                className="text-sega-muted hover:text-sega-cyan/90 transition-colors"
+              className="text-sega-muted hover:text-sega-cyan/90 transition-colors"
               aria-label="GitHub"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
@@ -257,7 +217,7 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
               href={LINKEDIN_URL}
               target="_blank"
               rel="noopener noreferrer"
-                className="text-sega-muted hover:text-sega-cyan/90 transition-colors"
+              className="text-sega-muted hover:text-sega-cyan/90 transition-colors"
               aria-label="LinkedIn"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>

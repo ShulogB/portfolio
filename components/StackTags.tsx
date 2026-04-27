@@ -13,10 +13,12 @@ import {
   SiKeycloak,
   SiVercel,
   SiRailway,
+  SiPython,
 } from "react-icons/si";
 import type { IconType } from "react-icons";
 
 const ICON_MAP: Record<string, IconType> = {
+  Python: SiPython,
   PostgreSQL: SiPostgresql,
   "Django REST Framework": SiDjango,
   Docker: SiDocker,

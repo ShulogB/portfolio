@@ -45,10 +45,13 @@ export default function CaseStudiesPanel({ selectedSlug, onSelect }: CaseStudies
 
   return (
     <div className="space-y-6">
+      <p className="text-sm text-sega-white/75 font-reading leading-relaxed max-w-2xl">
+        {content.productionProjectsIntro}
+      </p>
       <div
         className="flex gap-1 p-1 border-2 border-sega-cyan/50 bg-sega-bg-dark w-fit"
         role="tablist"
-        aria-label="Case studies"
+        aria-label={content.ui.sections.productionProjects}
       >
         {SLUGS.map((slug) => (
           <button
@@ -77,6 +80,7 @@ export default function CaseStudiesPanel({ selectedSlug, onSelect }: CaseStudies
             image={selectedImage}
             diagramType={selected.diagramType}
             adrs={selected.adrs}
+            variant="compact"
             externalUrl={
               (() => {
                 const project = getProjectBySlug(selected.slug);

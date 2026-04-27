@@ -45,19 +45,41 @@ export type CaseStudyCardContent = {
   adrs: AdrLink[];
 };
 
+/** Context → what you did → impact (interview-style bullets per project). */
+export type ProblemResolutionItem = {
+  context: string;
+  whatYouDid: string;
+  impact: string;
+};
+
+export type ProblemResolutionProjectGroup = {
+  projectTitle: string;
+  items: ProblemResolutionItem[];
+};
+
 export type UILabels = {
   hero: {
     tagline: string;
     caseStudies: string;
+    /** Primary CTA under hero (e.g. View projects). */
+    viewProjects: string;
     github: string;
     linkedin: string;
     downloadResume: string;
+  };
+  problemsSolved: {
+    context: string;
+    whatYouDid: string;
+    impact: string;
   };
   sections: {
     home: string;
     executiveSnapshot: string;
     experienceSummary: string;
     caseStudies: string;
+    /** Sidebar + section title for production work list. */
+    productionProjects: string;
+    problemsSolved: string;
     principles: string;
     howBuild: string;
     architectureDeepDive: string;
@@ -77,11 +99,14 @@ export type UILabels = {
   };
   caseStudy: {
     label: string;
+    /** Shorter label on compact project cards. */
+    productionProjectLabel: string;
     scaleConstraints: string;
     rejected: string;
     whatWouldBreak: string;
     architectureDecisionRecords: string;
     architectureAndDecisions: string;
+    viewDetails: string;
     scaleConstraintsRows: { requestVolume: string; concurrency: string; externalDependencies: string; failureModes: string; dataConsistency: string };
     gainedLabel: string;
     sacrificedLabel: string;

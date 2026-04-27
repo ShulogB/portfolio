@@ -6,6 +6,8 @@ import ArchitectureDiagram from "./ArchitectureDiagram";
 import { useLanguage } from "@/context/LanguageContext";
 import type { AdrLink } from "@/lib/content";
 
+type CaseStudyCardVariant = "full" | "compact";
+
 export default function CaseStudyCard({
   slug,
   title,
@@ -15,6 +17,7 @@ export default function CaseStudyCard({
   diagramType,
   adrs = [],
   externalUrl,
+  variant = "full",
 }: {
   slug: string;
   title: string;
@@ -24,9 +27,11 @@ export default function CaseStudyCard({
   diagramType?: "payments" | "identity";
   adrs?: AdrLink[];
   externalUrl?: string;
+  variant?: CaseStudyCardVariant;
 }) {
   const { content } = useLanguage();
   const ui = content.ui;
+  const isCompact = variant === "compact";
 
   return (
     <article className="border-2 border-sega-cyan/50 bg-sega-bg-dark/80 p-7 sm:p-8 flex flex-col hover:border-sega-cyan hover:shadow-sega-inner transition-all duration-200">
@@ -42,7 +47,7 @@ export default function CaseStudyCard({
         </div>
       )}
       <p className="font-pixel text-[10px] text-sega-yellow mb-3">
-        {ui.caseStudy.label}
+        {isCompact ? ui.caseStudy.productionProjectLabel : ui.caseStudy.label}
       </p>
       <h3 className="font-pixel text-sm text-sega-cyan">
         {title}
@@ -63,13 +68,15 @@ export default function CaseStudyCard({
           </a>
         </p>
       )}
-      <p className="text-sm text-sega-white/80 font-reading leading-relaxed flex-1 line-clamp-5">
+      <p
+        className={`text-sm text-sega-white/80 font-reading leading-relaxed flex-1 ${isCompact ? "" : "line-clamp-5"}`}
+      >
         {preview}
       </p>
-      {diagramType && (
+      {!isCompact && diagramType && (
         <ArchitectureDiagram type={diagramType} />
       )}
-      {adrs.length > 0 && (
+      {!isCompact && adrs.length > 0 && (
         <div className="mt-6 pt-5 border-t-2 border-sega-cyan/30">
           <p className="font-pixel text-[10px] text-sega-yellow mb-3">
             {ui.caseStudy.architectureDecisionRecords}
@@ -98,7 +105,7 @@ export default function CaseStudyCard({
       )}
       <div className="mt-8">
         <Button href={`/projects/${slug}`} variant="secondary">
-          {ui.caseStudy.architectureAndDecisions}
+          {isCompact ? ui.caseStudy.viewDetails : ui.caseStudy.architectureAndDecisions}
         </Button>
       </div>
     </article>

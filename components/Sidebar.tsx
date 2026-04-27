@@ -10,14 +10,7 @@ const CASE_STUDY_LABELS: Record<string, string> = {
 
 const CASE_STUDY_SLUGS = ["patagonia-dreams", "municipal-identity", "payment-orchestrator"] as const;
 
-type SectionId =
-  | "home"
-  | "experience"
-  | "case-studies"
-  | "how-build"
-  | "architecture"
-  | "stack"
-  | "contact";
+export type SectionId = "home" | "projects" | "problems" | "stack" | "contact";
 
 type SidebarProps = {
   labels: {
@@ -25,10 +18,8 @@ type SidebarProps = {
     role: string;
     tagline: string;
     home: string;
-    experience: string;
-    caseStudies: string;
-    howBuild: string;
-    architecture: string;
+    productionProjects: string;
+    problemsSolved: string;
     stack: string;
     contact: string;
   };
@@ -77,7 +68,7 @@ export default function Sidebar({
   onSectionClick,
   onCaseStudyClick,
 }: SidebarProps) {
-  const isCaseStudiesExpanded = expandedSection === "case-studies";
+  const isProjectsExpanded = expandedSection === "projects";
 
   return (
     <aside
@@ -111,39 +102,24 @@ export default function Sidebar({
           </li>
           <li>
             <NavLink
-              section="experience"
-              project="patagonia-dreams"
-              isActive={expandedSection === "experience"}
-              onClick={() => onSectionClick("experience")}
-              className={`block w-full text-left py-2.5 px-3 border-l-2 transition-colors cursor-pointer ${
-                expandedSection === "experience"
-                  ? "border-sega-cyan/80 bg-sega-cyan/10 text-sega-cyan/90 sidebar-item-active"
-                  : "border-transparent text-sega-muted hover:text-sega-white hover:bg-sega-cyan/5"
-              }`}
-            >
-              {labels.experience}
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              section="case-studies"
+              section="projects"
               project={selectedCaseStudySlug}
-              isActive={expandedSection === "case-studies"}
-              onClick={() => onSectionClick("case-studies")}
+              isActive={expandedSection === "projects"}
+              onClick={() => onSectionClick("projects")}
               className={`block w-full text-left py-2.5 px-3 border-l-2 transition-colors cursor-pointer ${
-                expandedSection === "case-studies"
+                expandedSection === "projects"
                   ? "border-sega-cyan/80 bg-sega-cyan/10 text-sega-cyan/90 sidebar-item-active"
                   : "border-transparent text-sega-muted hover:text-sega-white hover:bg-sega-cyan/5"
               }`}
             >
-              {labels.caseStudies}
+              {labels.productionProjects}
             </NavLink>
-            {isCaseStudiesExpanded && (
+            {isProjectsExpanded && (
               <ul className="mt-1 ml-3 space-y-0.5 border-l-2 border-sega-cyan/50 pl-3">
                 {CASE_STUDY_SLUGS.map((slug) => (
                   <li key={slug}>
                     <NavLink
-                      section="case-studies"
+                      section="projects"
                       project={slug}
                       isActive={selectedCaseStudySlug === slug}
                       onClick={() => onCaseStudyClick(slug)}
@@ -162,32 +138,17 @@ export default function Sidebar({
           </li>
           <li>
             <NavLink
-              section="how-build"
+              section="problems"
               project={selectedCaseStudySlug}
-              isActive={expandedSection === "how-build"}
-              onClick={() => onSectionClick("how-build")}
+              isActive={expandedSection === "problems"}
+              onClick={() => onSectionClick("problems")}
               className={`block w-full text-left py-2.5 px-3 border-l-2 transition-colors cursor-pointer ${
-                expandedSection === "how-build"
+                expandedSection === "problems"
                   ? "border-sega-cyan/80 bg-sega-cyan/10 text-sega-cyan/90 sidebar-item-active"
                   : "border-transparent text-sega-muted hover:text-sega-white hover:bg-sega-cyan/5"
               }`}
             >
-              {labels.howBuild}
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              section="architecture"
-              project={selectedCaseStudySlug}
-              isActive={expandedSection === "architecture"}
-              onClick={() => onSectionClick("architecture")}
-              className={`block w-full text-left py-2.5 px-3 border-l-2 transition-colors cursor-pointer ${
-                expandedSection === "architecture"
-                  ? "border-sega-cyan/80 bg-sega-cyan/10 text-sega-cyan/90 sidebar-item-active"
-                  : "border-transparent text-sega-muted hover:text-sega-white hover:bg-sega-cyan/5"
-              }`}
-            >
-              {labels.architecture}
+              {labels.problemsSolved}
             </NavLink>
           </li>
           <li>

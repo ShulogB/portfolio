@@ -8,11 +8,64 @@ const en = {
   hero: {
     name: "Giuliano Bentevenga",
     subtitle:
-      "Senior Backend Engineer focused on transactional systems, payment flows, identity gateways and strict trust boundaries. Production systems built for correctness under concurrency and failure.",
+      "Backend engineer with nearly five years of experience, currently leading backend for production systems. I work across development, multi-stage environments, QA, and production releases—not just the final deploy. I care about data consistency, concurrency, clear API contracts, and trust boundaries that hold up in the real world.",
     location: "Argentina — open to remote",
+    sidebarRole: "Senior Backend Engineer · backend lead in production",
     impactLine:
-      "Production backend engineer: hardened payment integrity against hostile inputs, moved integrations to contract-first payloads, and operated secure-by-default APIs with clear trust boundaries.",
+      "I’m especially strong in transactional booking, payments, and identity—but that sits inside a broader practice: architecture, safe product evolution, and systems that stay observable and operable.",
   },
+  /** Short intro above production project cards on the home page. */
+  productionProjectsIntro:
+    "Systems running in production where I own or lead backend work. For the long technical version, open a project page.",
+  problemResolutions: [
+    {
+      projectTitle: "Patagonia Dreams — booking platform",
+      items: [
+        {
+          context:
+            "Business rules needed identifiers scoped by activity: global mapping let the same modality leak across unrelated activities.",
+          whatYouDid:
+            "Moved to scope-aware mapping, pushed critical uniqueness into the database with conditional constraints where legacy data still had to live, and used additive migration plus explicit legacy fallback order.",
+          impact:
+            "Fewer cross-activity data bugs and a defensible story under concurrency—validators are not enough if the DB cannot enforce the rule.",
+        },
+        {
+          context:
+            "Tags, replace-style assignment APIs, and an external panel that bills per line: technically valid payloads still broke commercial semantics.",
+          whatYouDid:
+            "Modeled tags as a real M2M, made update semantics explicit (replace vs incremental), kept backward compatibility during rollout, and used decision-oriented logging plus payload audit when the integration mispriced.",
+          impact:
+            "Catalog and admin flows got clearer contracts; we caught a billing-side semantic mismatch quickly and corrected the mapping instead of debating HTTP 200 forever.",
+        },
+      ],
+    },
+    {
+      projectTitle: "Municipal identity gateway",
+      items: [
+        {
+          context:
+            "Many services needed one citizen identity without each system re-calling national registries or duplicating verification.",
+          whatYouDid:
+            "Central gateway issues tokens; downstream services validate and apply RBAC only. Minimal claims in tokens, fail-safe when national APIs are unavailable, audit on sensitive paths.",
+          impact:
+            "One trust boundary instead of many implicit ones; easier reasoning about security and compliance at interview depth.",
+        },
+      ],
+    },
+    {
+      projectTitle: "Payment orchestrator (design)",
+      items: [
+        {
+          context:
+            "Payment initiation and webhooks must stay correct under retries, duplicates, and overlapping writes.",
+          whatYouDid:
+            "Required idempotency keys for initiations, outbox-style separation for provider calls, webhook handling idempotent by provider event id, tight transaction boundaries per state transition.",
+          impact:
+            "Duplicate events and client retries become safe paths instead of incident generators—matches what senior roles expect you to articulate.",
+        },
+      ],
+    },
+  ],
   principles: [
     {
       title: "Single source of truth for critical state",
@@ -55,9 +108,9 @@ const en = {
     {
       slug: "patagonia-dreams",
       title: "Transactional Booking & Payment Platform",
-      tech: "Payments • Webhooks • Concurrency",
+      tech: "Django · PostgreSQL · payments & catalog integrations",
       preview:
-        "Tourism reservation platform in production. Multi-module, multi-tenant backoffice (partners and end customers). Payments via Mercado Pago, Stripe, Pix; webhooks as single source of truth for \"reservation paid,\" with HMAC validation and idempotency by event_id. Idempotency keys on reservation creation; promotion engine with transactional claims; catalog normalization with external providers. Modular monolith, Docker, CI/CD, AWS. Transactional integrity and payment security by design.",
+        "Tourism bookings in production: reservations, payments, multi-tenant backoffice, and integrations with payment providers and an external activity panel. The backend is where we enforce transactional rules, safe webhook handling, and releases through staging and QA—not only the prod deploy.",
       diagramType: "payments" as const,
       adrs: [
         { title: "Use webhooks as single source of truth for payment status", href: "#" },
@@ -70,9 +123,9 @@ const en = {
     {
       slug: "municipal-identity",
       title: "Municipal Unified Identity Platform",
-      tech: "Identity • Trust Boundaries • RBAC",
+      tech: "Gateway · tokens · national registry checks",
       preview:
-        "Centralized authentication gateway for a municipality: citizens authenticate once and access multiple government services with a single token. Identity is validated against national registries (Mi Argentina, RENAPER, AFIP) on every login; the gateway is the only component that calls those APIs and the only issuer of session tokens. Legacy systems consume signed tokens and enforce RBAC; they do not re-authenticate. No PII in tokens; fail safe when national APIs are unavailable. Audit and RBAC at gateway and service layer.",
+        "Single sign-on style gateway for municipal services: citizens log in once, downstream apps consume issued tokens. The gateway owns calls to national identity APIs and keeps verification rules explicit, including degraded behaviour when those dependencies are down.",
       diagramType: "identity" as const,
       adrs: [
         { title: "Gateway as sole issuer of session tokens; legacy systems validate only", href: "#" },
@@ -85,9 +138,9 @@ const en = {
     {
       slug: "payment-orchestrator",
       title: "Idempotent Payment Orchestrator",
-      tech: "Backend Architecture • Transactional Systems",
+      tech: "Idempotency · outbox-style flows · webhooks",
       preview:
-        "Designed and implemented a retry-safe payment processing pipeline with strict idempotency guarantees under concurrent transaction submissions.",
+        "Design exercise for a retry-safe payment pipeline: idempotent starts, provider calls decoupled from the request lifecycle, and webhook application keyed so duplicates never double-apply state.",
       diagramType: "payments" as const,
       adrs: [
         { title: "Idempotency key required for all payment initiation requests", href: "#" },
@@ -151,8 +204,8 @@ const en = {
     "Pessimistic lock (SELECT FOR UPDATE) on availability when creating a reservation; double-booking eliminated at observed conflict rate.",
     "Identity validated on every login; never issue \"verified\" when verification failed. Degraded modes when national APIs are unavailable.",
   ],
-  stack: ["PostgreSQL", "Django REST Framework", "Docker", "CI/CD", "GitHub Actions", "Stripe", "Mercado Pago", "Cognito"],
-  stackComplementary: ["AWS", "Vercel", "Railway"],
+  stack: ["Python", "Django REST Framework", "PostgreSQL", "Stripe", "Mercado Pago", "Cognito"],
+  stackComplementary: ["Docker", "GitHub Actions", "AWS", "Vercel", "Railway"],
   explicitTradeoffs: [
     { decision: "Webhooks as single source of truth for \"paid\".", gained: "No frontend or redirect driving state; provider is authority. Double-apply impossible by design.", sacrificed: "User waits for webhook; we depend on provider delivery and our endpoint availability. No instant \"paid\" from redirect." },
     { decision: "Pessimistic lock (SELECT FOR UPDATE) on availability.", gained: "No double-booking; deterministic behaviour at consistency boundary.", sacrificed: "Throughput on hot slots limited; lock contention under load. No optimistic retry path." },
@@ -177,10 +230,49 @@ const en = {
     { title: "Operational simplicity over premature distribution", explanation: "Modular monolith with clear boundaries preferred over microservices until scale and team justify the operational cost." },
   ] as OptimizeForItem[],
   ui: {
-    hero: { tagline: "System design focused portfolio", caseStudies: "Case studies", github: "GitHub", linkedin: "LinkedIn", downloadResume: "Download Resume (PDF)" },
-    sections: { home: "Home", executiveSnapshot: "Executive Snapshot", experienceSummary: "Impact & Experience", caseStudies: "Case studies", principles: "Engineering principles", howBuild: "How I build production backends", architectureDeepDive: "Architecture & Design", explicitTradeoffs: "Explicit Tradeoffs", decisions: "Selected engineering decisions", stack: "Technologies & Integrations", optimizeFor: "What I Optimize For", contact: "Contact" },
+    hero: {
+      tagline: "Backend engineer — production systems",
+      caseStudies: "Case studies",
+      viewProjects: "View projects",
+      github: "GitHub",
+      linkedin: "LinkedIn",
+      downloadResume: "Download Resume (PDF)",
+    },
+    problemsSolved: {
+      context: "Context",
+      whatYouDid: "What I did",
+      impact: "Impact",
+    },
+    sections: {
+      home: "Home",
+      executiveSnapshot: "Executive Snapshot",
+      experienceSummary: "Impact & Experience",
+      caseStudies: "Case studies",
+      productionProjects: "Production projects",
+      problemsSolved: "Problems we hit & how we fixed them",
+      principles: "Engineering principles",
+      howBuild: "How I build production backends",
+      architectureDeepDive: "Architecture & Design",
+      explicitTradeoffs: "Explicit Tradeoffs",
+      decisions: "Selected engineering decisions",
+      stack: "Technologies",
+      optimizeFor: "What I Optimize For",
+      contact: "Contact",
+    },
     contact: { name: "Name", email: "Email", message: "Message", send: "Send", successMessage: "Message sent. I'll get back to you soon.", errorMessage: "Could not send. Try again or email directly." },
-    caseStudy: { label: "Case Study", scaleConstraints: "Scale & Constraints", rejected: "What was explicitly rejected", whatWouldBreak: "What would break this system?", architectureDecisionRecords: "Architecture Decision Records", architectureAndDecisions: "Architecture & decisions", scaleConstraintsRows: { requestVolume: "Request volume", concurrency: "Concurrency", externalDependencies: "External dependencies", failureModes: "Failure modes", dataConsistency: "Data consistency" }, gainedLabel: "Gained:", sacrificedLabel: "Sacrificed:" },
+    caseStudy: {
+      label: "Case Study",
+      productionProjectLabel: "Production project",
+      scaleConstraints: "Scale & Constraints",
+      rejected: "What was explicitly rejected",
+      whatWouldBreak: "What would break this system?",
+      architectureDecisionRecords: "Architecture Decision Records",
+      architectureAndDecisions: "Architecture & decisions",
+      viewDetails: "Read the full write-up",
+      scaleConstraintsRows: { requestVolume: "Request volume", concurrency: "Concurrency", externalDependencies: "External dependencies", failureModes: "Failure modes", dataConsistency: "Data consistency" },
+      gainedLabel: "Gained:",
+      sacrificedLabel: "Sacrificed:",
+    },
     footer: "Backend systems built for production.",
     adminLogin: "Admin",
     project: { overview: "Overview", viewLiveSite: "View live site", deepDive: "Deep dive", images: "Images" },
