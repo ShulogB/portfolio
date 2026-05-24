@@ -70,11 +70,11 @@ const es = {
   hero: {
     name: "Giuliano Bentevenga",
     subtitle:
-      "Ingeniero backend con casi cinco años de experiencia; hace dos años lidero el backend de sistemas en producción. Trabajo el ciclo completo: desarrollo, varios entornos de staging, QA y release a producción—no solo tirar a prod. Me mueve la consistencia de datos, la concurrencia, contratos API claros y límites de confianza que aguanten el día a día.",
+      "Backend Lead con +4 años en producción. Construí sistemas de identidad municipal y plataformas de reservas transaccionales desde cero, con foco en escalabilidad, seguridad y contratos que aguantan en producción real.",
     location: "Argentina — abierto a remoto",
     sidebarRole: "Ingeniero backend senior · liderazgo de backend en producción",
     impactLine:
-      "Tengo mucha práctica en reservas transaccionales, pagos e identidad, pero lo encaro como fortalezas dentro de un backend más amplio: arquitectura, evolución segura del producto y operación con buena visibilidad.",
+      "Especializado en pagos (Mercado Pago, Stripe, Pix), identidad (AFIP, ANSES, RENAPER, Mi Argentina) e integraciones con terceros (Google, Meta, Amazon SES). Diseño sistemas que se mantienen correctos bajo concurrencia y escalan junto con el negocio.",
   },
   productionProjectsIntro:
     "Sistemas en producción donde lidero o lideré el backend. La versión larga está en la página de cada proyecto.",
@@ -136,10 +136,10 @@ const es = {
     { title: "Mínimos datos entre fronteras", description: "Tokens y payloads entre servicios llevan solo lo que el consumidor necesita para autorizar o cumplir el request. PII y datos crudos del registro se quedan en el lado que los posee. Limita el blast radius y preserva fronteras de compliance." },
   ],
   executiveSnapshot: [
-    "~2k reservas/mes en producción (patagoniadreams.com.ar).",
-    "~45k logins/mes en gateway de identidad (autentica.bahia.gob.ar).",
-    "99.5% uptime en gateway de identidad en 12 meses.",
+    "Plataforma de reservas para una operadora con +180k pasajeros/año y +7.000 reseñas 5 estrellas en Google.",
+    "~15k logins/mes en gateway de identidad municipal (autentica.bahia.gob.ar); 10+ servicios críticos centralizados, 2 años en producción ininterrumpida.",
     "p95 webhook-a-DB bajo 400 ms; 8+ servicios backend consumen tokens del gateway.",
+    "Integraciones: Mercado Pago · Stripe · Pix · AWS (Cognito, SES, Secrets Manager) · Google (OAuth, My Business, Merchant Center) · Meta · AFIP · ANSES · RENAPER · Mi Argentina.",
   ],
   caseStudies: [
     {
@@ -147,7 +147,7 @@ const es = {
       title: "Plataforma transaccional de reservas y pagos",
       tech: "Django · PostgreSQL · pagos e integración con catálogo",
       preview:
-        "Reservas turísticas en producción: pagos, backoffice multi-tenant e integración con proveedores de pago y un panel de actividades. El backend concentra reglas transaccionales, webhooks y releases pasando por staging y QA—no solo el deploy a prod.",
+        "Plataforma de reservas construida desde cero para una operadora con +180k pasajeros/año y +7.000 reseñas 5 estrellas en Google. Pagos transaccionales (Mercado Pago, Stripe, Pix) con webhooks como source of truth. Sincronización bidireccional con un panel externo de actividades: disponibilidad y precios en tiempo real, e inyección automática de reservas confirmadas. Backoffice multi-tenant, integraciones con Google (My Business, Merchant Center), Meta y Amazon SES.",
       diagramType: "payments" as const,
       adrs: [
         { title: "Webhooks como única fuente de verdad del estado de pago", href: "#" },
@@ -162,7 +162,7 @@ const es = {
       title: "Plataforma municipal de identidad unificada",
       tech: "Gateway · tokens · validación con registros nacionales",
       preview:
-        "Estilo SSO municipal: el ciudadano entra una vez y los sistemas consumen tokens emitidos por el gateway. El gateway concentra las llamadas a registros nacionales y deja explícitas las reglas de verificación y el comportamiento cuando esas dependencias no están.",
+        "SSO municipal para Bahía Blanca: los ciudadanos se autentican una vez y 10+ sistemas consumen tokens del gateway. Integra AFIP, ANSES, RENAPER y Mi Argentina. La verificación es explícita y fail-safe: no se emite token si las APIs nacionales no responden. ~15k logins/mes, 2 años en producción ininterrumpida.",
       diagramType: "identity" as const,
       adrs: [
         { title: "Gateway como único emisor de tokens; sistemas legacy solo validan", href: "#" },
@@ -193,7 +193,7 @@ const es = {
     { scope: "patagoniadreams.com.ar — webhooks de pago", challenge: "payloads duplicados o repetidos, reintentos del proveedor", decision: "Validación HMAC en todos los webhooks; idempotencia por event_id; único escritor del estado de pago", impact: "sin doble aplicación; reintentos seguros; p95 webhook-a-DB bajo 400 ms." },
     { scope: "patagoniadreams.com.ar — creación de reservas", challenge: "envíos duplicados (doble clic, reintentos del cliente)", decision: "Clave de idempotencia por request de creación; constraint único en la key en DB", impact: "reintentos seguros; sin reservas duplicadas." },
     { scope: "patagoniadreams.com.ar — estado de pago y reserva", challenge: "dos estados deben estar sincronizados; el frontend no puede manejar el estado", decision: "Una transacción DB en el webhook: crear/actualizar pago y marcar reserva pagada", impact: "no hay \"pagado\" sin webhook; sin estado partido." },
-    { scope: "autentica.bahia.gob.ar — ciclo de vida del token de sesión", challenge: "quién emite, quién valida; evitar PII en tokens", decision: "Gateway único emisor; tokens con solo claims (sub, roles, exp); RBAC en gateway y en cada servicio", impact: "límite de confianza claro; ~45k logins/mes; 99.5% uptime en 12 meses." },
+    { scope: "autentica.bahia.gob.ar — ciclo de vida del token de sesión", challenge: "quién emite, quién valida; evitar PII en tokens", decision: "Gateway único emisor; tokens con solo claims (sub, roles, exp); RBAC en gateway y en cada servicio", impact: "límite de confianza claro; ~15k logins/mes; 2 años en producción ininterrumpida." },
     { scope: "autentica.bahia.gob.ar — verificación de identidad", challenge: "APIs nacionales (RENAPER, AFIP) caídas o alta latencia", decision: "Nunca emitir \"verified\" cuando la verificación no tuvo éxito; modo degradado y alertas cuando las APIs no están", impact: "sin \"verified\" falso; re-validación en cada login." },
     { scope: "autentica.bahia.gob.ar — integración con servicios legacy", challenge: "los sistemas legacy no deben re-autenticar; una sola fuente de identidad", decision: "El gateway emite tokens firmados; los servicios validan firma y aplican RBAC; sin llamadas directas a APIs nacionales", impact: "un solo lugar para identidad; 8+ servicios backend consumen tokens." },
     { scope: "autentica.bahia.gob.ar — autorización y auditoría", challenge: "acceso por rol y recurso entre servicios; quién hizo qué", decision: "RBAC en gateway (nivel ruta) y en servicio (nivel recurso); roles en claims del token; constraints en DB y auditoría para acciones sensibles", impact: "política consistente; trazabilidad para compliance." },
@@ -241,8 +241,9 @@ const es = {
     "Bloqueo pesimista (SELECT FOR UPDATE) en disponibilidad al crear reserva; doble reserva eliminada en la tasa de conflicto observada.",
     "Identidad validada en cada login; nunca emitir \"verified\" cuando falló la verificación. Modos degradados cuando las APIs nacionales no están.",
   ],
-  stack: ["Python", "Django REST Framework", "PostgreSQL", "Stripe", "Mercado Pago", "Cognito"],
-  stackComplementary: ["Docker", "GitHub Actions", "AWS", "Vercel", "Railway"],
+  stack: ["Python", "Django REST Framework", "PostgreSQL"],
+  stackComplementary: ["AWS", "CI/CD", "GitHub Actions", "Docker"],
+  stackIntegrations: ["Google OAuth", "Mercado Pago", "Stripe", "Pix", "Amazon SES", "Cognito", "Meta"],
   explicitTradeoffs: [
     { decision: "Webhooks como única fuente de verdad de \"pagado\".", gained: "Ni frontend ni redirect manejan estado; el proveedor es autoridad. Doble aplicación imposible por diseño.", sacrificed: "El usuario espera el webhook; dependemos del envío del proveedor y de nuestro endpoint. No hay \"pagado\" instantáneo desde el redirect." },
     { decision: "Bloqueo pesimista (SELECT FOR UPDATE) en disponibilidad.", gained: "Sin doble reserva; comportamiento determinista en la frontera de consistencia.", sacrificed: "Throughput en slots calientes limitado; contención bajo carga. Sin camino optimista de reintento." },

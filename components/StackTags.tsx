@@ -11,9 +11,10 @@ import {
   SiStripe,
   SiMercadopago,
   SiKeycloak,
-  SiVercel,
-  SiRailway,
   SiPython,
+  SiAmazon,
+  SiGoogle,
+  SiMeta,
 } from "react-icons/si";
 import type { IconType } from "react-icons";
 
@@ -28,13 +29,15 @@ const ICON_MAP: Record<string, IconType> = {
   Stripe: SiStripe,
   "Mercado Pago": SiMercadopago,
   Cognito: SiKeycloak,
-  Vercel: SiVercel,
-  Railway: SiRailway,
+  "Amazon SES": SiAmazon,
+  "Google OAuth": SiGoogle,
+  Meta: SiMeta,
 };
 
 type StackTagsProps = {
   itemsPrincipal: string[];
   itemsComplementary?: string[];
+  itemsIntegrations?: string[];
 };
 
 function TagList({ items }: { items: string[] }) {
@@ -58,14 +61,14 @@ function TagList({ items }: { items: string[] }) {
   );
 }
 
-export default function StackTags({ itemsPrincipal, itemsComplementary = [] }: StackTagsProps) {
+export default function StackTags({ itemsPrincipal, itemsComplementary = [], itemsIntegrations = [] }: StackTagsProps) {
   const { lang } = useLanguage();
 
   return (
     <div className="space-y-5 w-full">
       <div className="space-y-2">
         <h3 className="font-pixel text-[10px] uppercase tracking-widest text-sega-yellow/90 text-center">
-          {lang === "es" ? "Conocimiento principal" : "Core knowledge"}
+          {lang === "es" ? "Stack principal" : "Core stack"}
         </h3>
         <TagList items={itemsPrincipal} />
       </div>
@@ -73,9 +76,18 @@ export default function StackTags({ itemsPrincipal, itemsComplementary = [] }: S
       {itemsComplementary.length > 0 && (
         <div className="space-y-2">
           <h3 className="font-pixel text-[10px] uppercase tracking-widest text-sega-yellow/75 text-center">
-            {lang === "es" ? "Conocimiento complementario" : "Complementary knowledge"}
+            {lang === "es" ? "Conocimientos complementarios" : "Complementary knowledge"}
           </h3>
           <TagList items={itemsComplementary} />
+        </div>
+      )}
+
+      {itemsIntegrations.length > 0 && (
+        <div className="space-y-2">
+          <h3 className="font-pixel text-[10px] uppercase tracking-widest text-sega-yellow/60 text-center">
+            {lang === "es" ? "Integraciones" : "Integrations"}
+          </h3>
+          <TagList items={itemsIntegrations} />
         </div>
       )}
     </div>

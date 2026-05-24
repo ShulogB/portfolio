@@ -34,7 +34,7 @@ const patagoniaDreams: Project = {
   title: "Transactional Booking & Payment Platform",
   tech: "Payments • Webhooks • Concurrency",
   overview:
-    "Backend for Patagonia Dreams: identity via AWS Cognito with token verification and SECRET_HASH; transactional payment and booking flows; safe export (JSON instead of CSV to avoid formula injection); URL sanitization in emails; secrets in AWS Secrets Manager; CI/CD pipeline with SAST (Semgrep) and secret scanning (Gitleaks). Tourism reservation platform in production. Multi-module, multi-tenant backoffice (partners and end customers). Payments via Mercado Pago, Stripe, Pix; webhooks as single source of truth for \"reservation paid,\" with HMAC validation and idempotency by event_id. Stack: Django, DRF, PostgreSQL, AWS (SES, Cognito, ECR/K8s), external Panel and payment gateways.",
+    "Backend for Patagonia Dreams — a tourism operator with 180k+ passengers/year and 7,000+ five-star Google reviews. Built and led the platform from scratch with a focus on scalability and production security: transactional reservations and payments (Mercado Pago, Stripe, Pix), multi-tenant backoffice (partners and end customers), and integrations with Google (OAuth, My Business, Merchant Center), Meta, and Amazon SES. Bidirectional sync with an external activity panel: real-time availability and pricing pulled in, confirmed bookings injected back out automatically. Identity via AWS Cognito with JWKS token verification and SECRET_HASH; webhooks as single source of truth for \"reservation paid\" with HMAC validation and idempotency by event_id; CI/CD with SAST (Semgrep), secret scanning (Gitleaks), pip-audit, and Trivy. Stack: Django, DRF, PostgreSQL, AWS (SES, Cognito, Secrets Manager, ECR/K8s).",
   diagramType: "payments",
   adrs: [
     { title: "Use webhooks as single source of truth for payment status", href: "#" },
@@ -49,9 +49,9 @@ const patagoniaDreams: Project = {
     { title: "CI/CD: Semgrep (SAST), Gitleaks, pip-audit, Trivy (Docker); no direct push to production branch", href: "#" },
   ],
   scaleConstraints: {
-    requestVolume: "~2k reservations/month; webhook bursts up to ~50/min on peak.",
+    requestVolume: "Operator with 180k+ passengers/year. Online platform reservations + webhook bursts up to ~50/min on peak.",
     concurrency: "Pessimistic lock on availability row per slot; single writer for payment state. No cross-slot locking.",
-    externalDependencies: "Mercado Pago, Stripe, Pix; AWS Cognito, SES; external Panel (activities, rates, blocks). Webhooks are async; payment status only via webhook.",
+    externalDependencies: "Mercado Pago, Stripe, Pix (payments); external activity Panel (availability, rates, and bidirectional booking sync); AWS Cognito, SES, Secrets Manager; Google (OAuth, My Business, Merchant Center); Meta. Webhooks are async; payment status only via webhook.",
     failureModes: "Provider timeout or webhook delay → reservation stays pending until webhook or manual reconciliation. Duplicate webhook → idempotent by event_id. Cognito/Panel down → degraded auth or catalog sync.",
     dataConsistency: "Single DB transaction for reservation + payment on webhook. Reservation \"paid\" only after webhook; frontend cannot set paid. Cognito ↔ Django user sync via get_or_create and ID token verification.",
   },
@@ -106,6 +106,15 @@ const patagoniaDreams: Project = {
       ],
     },
     {
+      title: "External integrations and infrastructure",
+      paragraphs: [
+        "The platform integrates bidirectionally with an external activity panel: availability and pricing are pulled in real time before a booking is confirmed; once confirmed, the reservation is automatically injected back into the panel via API. This keeps both systems consistent without manual intervention and without coupling the reservation flow to panel response time.",
+        "Google integrations cover OAuth 2.0 for authentication, My Business API for review management, and Merchant Center for product feed automation. Meta and Watti integrations handle marketing and customer communication automation. Amazon SES manages all transactional emails with parameterized templates and URL validation before dispatch.",
+        "Infrastructure runs on AWS (EC2, ALB, Route 53, ACM/SSL, Cognito, SES, Secrets Manager, ECR/K8s) with Docker across dev, staging, and production. All sensitive configuration is loaded from AWS Secrets Manager at runtime — no secrets in code or repo.",
+        "CI/CD pipeline (GitHub Actions) runs SAST (Semgrep), secret scanning (Gitleaks), pip-audit, and Trivy container scanning before any merge to the production branch. No direct push to prod branch is allowed.",
+      ],
+    },
+    {
       title: "Idempotency in distributed payments",
       paragraphs: [
         "Payment providers and webhooks deliver at least once. Retries, network partitions, and client double-submits make duplicate events the norm. Idempotency is implemented at two distinct layers: client-initiated operations (e.g. reservation creation) and server-driven events (webhooks).",
@@ -134,7 +143,7 @@ const municipalIdentity: Project = {
   title: "Municipal Unified Identity Platform",
   tech: "Identity • Trust Boundaries • RBAC",
   overview:
-    "Centralized authentication gateway for a municipality: citizens authenticate once and access multiple government services with a single token. Identity is validated against national registries (Mi Argentina, RENAPER, AFIP) on every login; the gateway is the only component that calls those APIs and the only issuer of session tokens. Legacy systems consume signed tokens and enforce RBAC; they do not re-authenticate. No PII in tokens; fail safe when national APIs are unavailable. Audit and RBAC at gateway and service layer.",
+    "Centralized SSO-style authentication gateway for the Municipality of Bahía Blanca (autentica.bahia.gob.ar): citizens authenticate once and access 10+ critical municipal services with a single token. ~15k logins/month, 2 years uninterrupted in production. Identity is validated against national registries — AFIP, ANSES, RENAPER, and Mi Argentina — on every login; the gateway is the sole component that calls those APIs and the sole issuer of session tokens. Legacy systems consume signed tokens and enforce RBAC; they never re-authenticate. No PII in tokens; fail safe when national APIs are unavailable. Audit and RBAC at gateway and service layer.",
   diagramType: "identity",
   adrs: [
     { title: "Gateway as sole issuer of session tokens; legacy systems validate only", href: "#" },
@@ -193,7 +202,7 @@ const municipalIdentity: Project = {
   titleEs: "Plataforma municipal de identidad unificada",
   techEs: "Identidad • Límites de confianza • RBAC",
   overviewEs:
-    "Gateway de autenticación centralizado para un municipio: los ciudadanos se autentican una vez y acceden a múltiples servicios gubernamentales con un único token. La identidad se valida contra registros nacionales (Mi Argentina, RENAPER, AFIP) en cada login; el gateway es el único componente que llama esas APIs y el único emisor de tokens de sesión. Sistemas legacy consumen tokens firmados y aplican RBAC; no re-autentican. Sin PII en tokens; fail safe cuando las APIs nacionales no están disponibles. Auditoría y RBAC en gateway y capa de servicio.",
+    "Gateway de autenticación estilo SSO para el Municipio de Bahía Blanca (autentica.bahia.gob.ar): los ciudadanos se autentican una vez y acceden a 10+ servicios municipales críticos con un único token. ~15k logins/mes, 2 años en producción ininterrumpida. La identidad se valida contra registros nacionales — AFIP, ANSES, RENAPER y Mi Argentina — en cada login; el gateway es el único componente que llama esas APIs y el único emisor de tokens de sesión. Sistemas legacy consumen tokens firmados y aplican RBAC; no re-autentican. Sin PII en tokens; fail safe cuando las APIs nacionales no están disponibles. Auditoría y RBAC en gateway y capa de servicio.",
 };
 
 const PAYMENT_ORCHESTRATOR_ASCII = `Client

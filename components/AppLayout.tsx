@@ -162,6 +162,7 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
             <StackTags
               itemsPrincipal={content.stack}
               itemsComplementary={content.stackComplementary}
+              itemsIntegrations={content.stackIntegrations}
             />
           </CollapsibleSection>
           <CollapsibleSection
