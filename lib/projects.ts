@@ -34,7 +34,7 @@ const patagoniaDreams: Project = {
   title: "Transactional Booking & Payment Platform",
   tech: "Payments • Webhooks • Concurrency",
   overview:
-    "Backend for Patagonia Dreams — a tourism operator with 180k+ passengers/year and 7,000+ five-star Google reviews. Built and led the platform from scratch with a focus on scalability and production security: transactional reservations and payments (Mercado Pago, Stripe, Pix), multi-tenant backoffice (partners and end customers), and integrations with Google (OAuth, My Business, Merchant Center), Meta, and Amazon SES. Bidirectional sync with an external activity panel: real-time availability and pricing pulled in, confirmed bookings injected back out automatically. Identity via AWS Cognito with JWKS token verification and SECRET_HASH; webhooks as single source of truth for \"reservation paid\" with HMAC validation and idempotency by event_id; CI/CD with SAST (Semgrep), secret scanning (Gitleaks), pip-audit, and Trivy. Stack: Django, DRF, PostgreSQL, AWS (SES, Cognito, Secrets Manager, ECR/K8s).",
+    "Backend for Patagonia Dreams — a tourism operator with 180k+ passengers/year and 7,000+ five-star Google reviews. Built and led the platform from scratch with a focus on scalability and production security: transactional reservations and payments (Mercado Pago, Stripe, Pix), multi-tenant backoffice (partners and end customers), and integrations with Google (OAuth, My Business, Merchant Center), Meta, and Amazon SES. Bidirectional sync with an external activity panel: real-time availability and pricing pulled in, confirmed bookings injected back out automatically. Identity via AWS Cognito with JWKS token verification and SECRET_HASH; webhooks as single source of truth for \"reservation paid\" with HMAC validation and idempotency by event_id. Development follows a structured flow: feature branches → CI checks → PR review → merge to production; no direct pushes to the production branch. Stack: Django, DRF, PostgreSQL, AWS (SES, Cognito, Secrets Manager, ECR/K8s).",
   diagramType: "payments",
   adrs: [
     { title: "Use webhooks as single source of truth for payment status", href: "#" },
@@ -46,7 +46,7 @@ const patagoniaDreams: Project = {
     { title: "SECRET_HASH in all Cognito calls that require it (sign_up, confirm_sign_up, authenticate, refresh_token)", href: "#" },
     { title: "JSON export instead of CSV to avoid Excel/CSV formula injection; URL validation (http_url) in email templates", href: "#" },
     { title: "Critical config (Cognito, Stripe, Panel, etc.) via env from AWS Secrets Manager; no secrets in repo", href: "#" },
-    { title: "CI/CD: Semgrep (SAST), Gitleaks, pip-audit, Trivy (Docker); no direct push to production branch", href: "#" },
+    { title: "Structured development flow: feature branches → CI checks → PR review → merge to production; no direct pushes", href: "#" },
   ],
   scaleConstraints: {
     requestVolume: "Operator with 180k+ passengers/year. Online platform reservations + webhook bursts up to ~50/min on peak.",
@@ -94,7 +94,7 @@ const patagoniaDreams: Project = {
       paragraphs: [
         "Injection vectors removed: CSV export replaced by JSON response to avoid Excel/CSV formula injection; URL validation in email templates (http_url filter: only http/https) to prevent XSS via javascript: in href.",
         "Secrets out of code: critical config (FRONTEND_URL, WHATSAPP_NUMBER, social URLs, Cognito, Stripe, Panel, etc.) via environment variables from AWS Secrets Manager; no sensitive values in repo.",
-        "CI/CD and security: pipeline with Semgrep (SAST), Gitleaks, pip-audit, Trivy (Docker image); no direct push to production branch; migration and dependency review before deploy.",
+        "Development follows a structured flow: feature branches → CI checks (linting, security scans) → PR review → merge to production. No direct pushes to the production branch.",
       ],
     },
     {
@@ -111,7 +111,7 @@ const patagoniaDreams: Project = {
         "The platform integrates bidirectionally with an external activity panel: availability and pricing are pulled in real time before a booking is confirmed; once confirmed, the reservation is automatically injected back into the panel via API. This keeps both systems consistent without manual intervention and without coupling the reservation flow to panel response time.",
         "Google integrations cover OAuth 2.0 for authentication, My Business API for review management, and Merchant Center for product feed automation. Meta and Watti integrations handle marketing and customer communication automation. Amazon SES manages all transactional emails with parameterized templates and URL validation before dispatch.",
         "Infrastructure runs on AWS (EC2, ALB, Route 53, ACM/SSL, Cognito, SES, Secrets Manager, ECR/K8s) with Docker across dev, staging, and production. All sensitive configuration is loaded from AWS Secrets Manager at runtime — no secrets in code or repo.",
-        "CI/CD pipeline (GitHub Actions) runs SAST (Semgrep), secret scanning (Gitleaks), pip-audit, and Trivy container scanning before any merge to the production branch. No direct push to prod branch is allowed.",
+        "Development follows a structured flow: feature branches → CI checks (linting, security scans) → PR review → merge to production. No direct pushes to the production branch.",
       ],
     },
     {
