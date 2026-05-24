@@ -281,3 +281,14 @@ const en = {
 };
 
 export default en;
+rrency: "Concurrency", externalDependencies: "External dependencies", failureModes: "Failure modes", dataConsistency: "Data consistency" },
+      gainedLabel: "Gained:",
+      sacrificedLabel: "Sacrificed:",
+    },
+    footer: "Backend systems built for production.",
+    adminLogin: "Admin",
+    project: { overview: "Overview", viewLiveSite: "View live site", deepDive: "Deep dive", images: "Images" },
+  } as UILabels,
+};
+
+export default en;

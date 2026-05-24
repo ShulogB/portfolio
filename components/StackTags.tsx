@@ -12,7 +12,6 @@ import {
   SiMercadopago,
   SiKeycloak,
   SiPython,
-  SiAmazon,
   SiGoogle,
   SiMeta,
 } from "react-icons/si";
@@ -29,7 +28,6 @@ const ICON_MAP: Record<string, IconType> = {
   Stripe: SiStripe,
   "Mercado Pago": SiMercadopago,
   Cognito: SiKeycloak,
-  "Amazon SES": SiAmazon,
   "Google OAuth": SiGoogle,
   Meta: SiMeta,
 };

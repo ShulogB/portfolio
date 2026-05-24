@@ -231,3 +231,11 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
     </div>
   );
 }
+/div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+;
+}

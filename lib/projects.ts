@@ -309,4 +309,4 @@ export function getProjectBySlug(slug: string): Project | null {
 
 export function getAllProjectSlugs(): ProjectSlug[] {
   return projects.map((p) => p.slug);
-}
+}
