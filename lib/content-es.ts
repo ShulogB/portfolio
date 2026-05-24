@@ -271,8 +271,3 @@ const es = {
 };
 
 export default es;
-],
-  ui: uiEs,
-};
-
-export default es;
