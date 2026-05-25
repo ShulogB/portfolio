@@ -14,9 +14,9 @@ export default function Button({
   const base =
     "inline-flex items-center justify-center px-4 py-2.5 text-xs font-pixel transition-all duration-200";
   const primary =
-    "border border-sega-cyan/60 bg-sega-cyan/15 text-sega-cyan hover:bg-sega-cyan/25 hover:shadow-sega-glow";
+    "border border-sega-cyan/70 bg-sega-cyan/12 text-sega-cyan hover:bg-sega-cyan/22 hover:shadow-sega-glow hover:border-sega-cyan neon-text-sm";
   const secondary =
-    "border border-sega-cyan/50 text-sega-white hover:border-sega-cyan/70 hover:bg-sega-cyan/10";
+    "border border-sega-cyan/40 text-sega-white hover:border-sega-cyan/70 hover:bg-sega-cyan/8 hover:text-sega-cyan";
   const ghost =
     "text-sega-muted hover:text-sega-cyan hover:bg-sega-cyan/5";
 

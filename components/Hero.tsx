@@ -12,13 +12,17 @@ export default function Hero({ onViewProjectsClick }: HeroProps) {
   const { content } = useLanguage();
   const { hero, ui } = content;
   return (
-    <header className="border-b border-sega-cyan/50 bg-sega-bg-dark/50">
+    <header className="border-b border-sega-cyan/30 bg-sega-bg-dark/60">
       <div className="max-w-4xl mx-auto px-6 py-16 sm:py-20">
-        <h1 className="font-pixel text-xl md:text-2xl text-sega-cyan/90 tracking-wide">
+        <h1 className="font-pixel text-xl md:text-2xl text-sega-cyan tracking-wide neon-text">
           {hero.name}
         </h1>
-        <p className="mt-2 text-xs font-pixel text-sega-yellow">
+        <p className="mt-2 text-xs font-pixel text-sega-yellow neon-yellow">
           {hero.location}
+        </p>
+        <p className="mt-1 text-[10px] font-pixel text-sega-cyan/50 tracking-widest">
+          &gt; backend engineer
+          <span className="cursor-blink ml-0.5">_</span>
         </p>
         <p className="mt-4 text-base md:text-lg text-sega-white font-reading leading-snug">
           {hero.subtitle}
@@ -31,7 +35,7 @@ export default function Hero({ onViewProjectsClick }: HeroProps) {
             <button
               type="button"
               onClick={onViewProjectsClick}
-              className="font-pixel text-xs border border-sega-cyan/60 bg-sega-cyan/15 px-4 py-2.5 text-sega-cyan hover:bg-sega-cyan/25 hover:shadow-sega-glow transition-all"
+              className="font-pixel text-xs border border-sega-cyan/70 bg-sega-cyan/12 px-4 py-2.5 text-sega-cyan hover:bg-sega-cyan/20 hover:shadow-sega-glow transition-all"
             >
               {ui.hero.viewProjects}
             </button>
