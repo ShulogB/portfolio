@@ -9,6 +9,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import { useLanguage } from "@/context/LanguageContext";
 
 type ArchitectureDiagramProps = {
   type: "payments" | "identity";
@@ -43,6 +44,8 @@ function useDiagram() {
   if (!ctx) throw new Error("Node/Arrow must be used inside ArchitectureDiagram");
   return ctx;
 }
+
+// --- Static configs (EN) ---
 
 const PAYMENTS_CONFIG: DiagramConfig = {
   nodes: {
@@ -122,28 +125,76 @@ const IDENTITY_CONFIG: DiagramConfig = {
   ],
 };
 
-const FLOW_LABEL: Record<"payments" | "identity", string> = {
-  payments: "Transactional Flow Overview",
-  identity: "Identity Trust Boundary Flow",
+// --- Labels per language ---
+
+type DiagramLabels = {
+  flowLabel: Record<"payments" | "identity", string>;
+  systemInvariants: string;
+  internalSystem: string;
+  asyncCallback: string;
+  risks: string;
+  invariants: string;
+  systemInvariantsList: Record<"payments" | "identity", string[]>;
 };
 
-const SYSTEM_INVARIANTS: Record<"payments" | "identity", string[]> = {
-  payments: [
-    "A payment intent cannot transition from failed to succeeded.",
-    "Reservation \"paid\" is set only after a verified webhook; frontend and redirect cannot set it.",
-    "Webhook events are processed idempotently by provider event_id.",
-    "Availability for a slot is updated under pessimistic lock (SELECT FOR UPDATE); no optimistic commit.",
-    "Idempotency keys are scoped per client and stored; duplicate key returns original response.",
-    "Payment and reservation state changes for a webhook occur in a single database transaction.",
-  ],
-  identity: [
-    "Tokens must not contain PII; only claims required for authorization (sub, roles, exp).",
-    "\"Verified\" is never issued when verification against national APIs did not succeed.",
-    "Only the gateway calls national APIs and issues tokens; services validate tokens only.",
-    "Session tokens are short-lived; re-validation on every login.",
-    "RBAC is enforced at gateway (route) and at service (resource); no bypass.",
-    "All authentication and token issuance events are logged for audit.",
-  ],
+const LABELS_EN: DiagramLabels = {
+  flowLabel: {
+    payments: "Transactional Flow Overview",
+    identity: "Identity Trust Boundary Flow",
+  },
+  systemInvariants: "System Invariants",
+  internalSystem: "Internal System",
+  asyncCallback: "async callback",
+  risks: "Risks",
+  invariants: "Invariants",
+  systemInvariantsList: {
+    payments: [
+      "A payment intent cannot transition from failed to succeeded.",
+      "Reservation \"paid\" is set only after a verified webhook; frontend and redirect cannot set it.",
+      "Webhook events are processed idempotently by provider event_id.",
+      "Availability for a slot is updated under pessimistic lock (SELECT FOR UPDATE); no optimistic commit.",
+      "Idempotency keys are scoped per client and stored; duplicate key returns original response.",
+      "Payment and reservation state changes for a webhook occur in a single database transaction.",
+    ],
+    identity: [
+      "Tokens must not contain PII; only claims required for authorization (sub, roles, exp).",
+      "\"Verified\" is never issued when verification against national APIs did not succeed.",
+      "Only the gateway calls national APIs and issues tokens; services validate tokens only.",
+      "Session tokens are short-lived; re-validation on every login.",
+      "RBAC is enforced at gateway (route) and at service (resource); no bypass.",
+      "All authentication and token issuance events are logged for audit.",
+    ],
+  },
+};
+
+const LABELS_ES: DiagramLabels = {
+  flowLabel: {
+    payments: "Visión general del flujo transaccional",
+    identity: "Flujo de límite de confianza de identidad",
+  },
+  systemInvariants: "Invariantes del sistema",
+  internalSystem: "Sistema interno",
+  asyncCallback: "callback asíncrono",
+  risks: "Riesgos",
+  invariants: "Invariantes",
+  systemInvariantsList: {
+    payments: [
+      "Un intent de pago no puede transicionar de fallado a exitoso.",
+      "Reserva 'pagada' se setea solo tras un webhook verificado; el frontend y el redirect no pueden setearlo.",
+      "Los eventos de webhook se procesan de forma idempotente por event_id del proveedor.",
+      "La disponibilidad de un slot se actualiza bajo lock pesimista (SELECT FOR UPDATE); sin commit optimista.",
+      "Las claves de idempotencia están scoped por cliente y almacenadas; una clave duplicada devuelve la respuesta original.",
+      "Los cambios de estado de pago y reserva para un webhook ocurren en una única transacción de base de datos.",
+    ],
+    identity: [
+      "Los tokens no deben contener PII; solo claims necesarios para autorización (sub, roles, exp).",
+      "'Verificado' nunca se emite cuando la verificación contra las APIs nacionales no fue exitosa.",
+      "Solo el gateway llama a las APIs nacionales y emite tokens; los servicios solo validan tokens.",
+      "Los tokens de sesión son de corta vida; re-validación en cada login.",
+      "El RBAC se aplica en el gateway (ruta) y en el servicio (recurso); sin bypass.",
+      "Todos los eventos de autenticación y emisión de tokens se registran para auditoría.",
+    ],
+  },
 };
 
 // --- Tooltip (minimal, senior-level) ---
@@ -153,11 +204,13 @@ function NodeTooltip({
   meta,
   visible,
   anchorRef,
+  labels,
 }: {
   nodeId: string;
   meta: NodeMeta;
   visible: boolean;
   anchorRef: React.RefObject<HTMLDivElement | null>;
+  labels: DiagramLabels;
 }) {
   const [coords, setCoords] = useState({ x: 0, y: 0 });
 
@@ -184,14 +237,12 @@ function NodeTooltip({
       id={`tooltip-${nodeId}`}
       aria-hidden={!visible}
     >
-      <div
-        className="w-64 border-2 border-sega-cyan bg-sega-bg-dark p-3 shadow-sega-glow text-left"
-      >
+      <div className="w-64 border-2 border-sega-cyan bg-sega-bg-dark p-3 shadow-sega-glow text-left">
         <p className="text-[11px] font-medium text-sega-cyan font-pixel mb-1">{meta.title}</p>
         <p className="text-[10px] text-sega-white/80 leading-relaxed mb-2 font-reading">{meta.description}</p>
         {meta.risks && meta.risks.length > 0 && (
           <div className="mb-2">
-            <span className="text-[9px] uppercase tracking-wider text-sega-yellow font-pixel">Risks</span>
+            <span className="text-[9px] uppercase tracking-wider text-sega-yellow font-pixel">{labels.risks}</span>
             <ul className="text-[10px] text-sega-white/60 mt-0.5 list-disc list-inside space-y-0.5 font-reading">
               {meta.risks.map((r, i) => (
                 <li key={i}>{r}</li>
@@ -201,7 +252,7 @@ function NodeTooltip({
         )}
         {meta.invariants && meta.invariants.length > 0 && (
           <div>
-            <span className="text-[9px] uppercase tracking-wider text-sega-green font-pixel">Invariants</span>
+            <span className="text-[9px] uppercase tracking-wider text-sega-green font-pixel">{labels.invariants}</span>
             <ul className="text-[10px] text-sega-white/60 mt-0.5 list-disc list-inside space-y-0.5 font-reading">
               {meta.invariants.map((inv, i) => (
                 <li key={i}>{inv}</li>
@@ -219,9 +270,11 @@ function NodeTooltip({
 function Node({
   nodeId,
   nodeType,
+  labels,
 }: {
   nodeId: string;
   nodeType: NodeType;
+  labels: DiagramLabels;
 }) {
   const anchorRef = useMemo(() => ({ current: null as HTMLDivElement | null }), []);
   const [tooltipVisible, setTooltipVisible] = useState(false);
@@ -303,13 +356,14 @@ function Node({
           meta={meta}
           visible={tooltipVisible}
           anchorRef={anchorRef}
+          labels={labels}
         />
       )}
     </>
   );
 }
 
-// --- Arrows (participate in flow highlight) ---
+// --- Arrows ---
 
 function Arrow({ flowIndex }: { flowIndex: number }) {
   const { highlightedFlowIndices } = useDiagram();
@@ -323,23 +377,13 @@ function Arrow({ flowIndex }: { flowIndex: number }) {
       className={`flex-shrink-0 md:rotate-0 rotate-90 transition-opacity duration-150 ${isHighlighted ? "opacity-70" : "opacity-40"}`}
       aria-hidden
     >
-      <line
-        x1="2"
-        y1="16"
-        x2="10"
-        y2="16"
-        stroke="rgba(255,255,255,0.35)"
-        strokeWidth="0.75"
-      />
-      <path
-        d="M10 13 L13 16 L10 19 Z"
-        fill="rgba(255,255,255,0.35)"
-      />
+      <line x1="2" y1="16" x2="10" y2="16" stroke="rgba(255,255,255,0.35)" strokeWidth="0.75" />
+      <path d="M10 13 L13 16 L10 19 Z" fill="rgba(255,255,255,0.35)" />
     </svg>
   );
 }
 
-function ArrowVerticalAsync({ flowIndex }: { flowIndex: number }) {
+function ArrowVerticalAsync({ flowIndex, asyncCallbackLabel }: { flowIndex: number; asyncCallbackLabel: string }) {
   const { highlightedFlowIndices } = useDiagram();
   const isHighlighted = highlightedFlowIndices.has(flowIndex);
 
@@ -356,100 +400,54 @@ function ArrowVerticalAsync({ flowIndex }: { flowIndex: number }) {
         y="14"
         textAnchor="middle"
         fill="rgba(255,255,255,0.5)"
-        style={{
-          fontFamily: "var(--font-inter), system-ui, sans-serif",
-          fontSize: "9px",
-        }}
+        style={{ fontFamily: "var(--font-inter), system-ui, sans-serif", fontSize: "9px" }}
       >
-        async callback
+        {asyncCallbackLabel}
       </text>
-      <line
-        x1="16"
-        y1="18"
-        x2="16"
-        y2="40"
-        stroke="rgba(255,255,255,0.35)"
-        strokeWidth="0.75"
-        strokeDasharray="3 3"
-      />
-      <path
-        d="M13 37 L16 42 L19 37 Z"
-        fill="rgba(255,255,255,0.35)"
-      />
+      <line x1="16" y1="18" x2="16" y2="40" stroke="rgba(255,255,255,0.35)" strokeWidth="0.75" strokeDasharray="3 3" />
+      <path d="M13 37 L16 42 L19 37 Z" fill="rgba(255,255,255,0.35)" />
     </svg>
   );
 }
 
-// --- Diagram provider (injects config + highlight state) ---
+// --- Diagram provider ---
 
-function DiagramProvider({
-  config,
-  children,
-}: {
-  config: DiagramConfig;
-  children: React.ReactNode;
-}) {
+function DiagramProvider({ config, children }: { config: DiagramConfig; children: React.ReactNode }) {
   const [highlightedFlowIndices, setHighlightedFlowIndices] = useState<Set<number>>(new Set());
 
   const getFlowIndicesForNode = useCallback(
-    (nodeId: string) => {
-      return config.flows
+    (nodeId: string) =>
+      config.flows.map((flow, index) => (flow.includes(nodeId) ? index : -1)).filter((i) => i >= 0),
+    [config.flows]
+  );
+
+  const setHighlightedFromNode = useCallback(
+    (nodeId: string | null) => {
+      if (!nodeId) { setHighlightedFlowIndices(new Set()); return; }
+      const indices = config.flows
         .map((flow, index) => (flow.includes(nodeId) ? index : -1))
         .filter((i) => i >= 0);
+      setHighlightedFlowIndices(new Set(indices));
     },
     [config.flows]
   );
 
-  const setHighlightedFromNode = useCallback((nodeId: string | null) => {
-    if (!nodeId) {
-      setHighlightedFlowIndices(new Set());
-      return;
-    }
-    const indices = config.flows
-      .map((flow, index) => (flow.includes(nodeId) ? index : -1))
-      .filter((i) => i >= 0);
-    setHighlightedFlowIndices(new Set(indices));
-  }, [config.flows]);
-
-  const getMeta = useCallback(
-    (id: string) => config.nodes[id],
-    [config.nodes]
-  );
+  const getMeta = useCallback((id: string) => config.nodes[id], [config.nodes]);
 
   const value = useMemo<DiagramContextValue>(
-    () => ({
-      config,
-      highlightedFlowIndices,
-      getFlowIndicesForNode,
-      setHighlightedFromNode,
-      getMeta,
-    }),
-    [
-      config,
-      highlightedFlowIndices,
-      getFlowIndicesForNode,
-      setHighlightedFromNode,
-      getMeta,
-    ]
+    () => ({ config, highlightedFlowIndices, getFlowIndicesForNode, setHighlightedFromNode, getMeta }),
+    [config, highlightedFlowIndices, getFlowIndicesForNode, setHighlightedFromNode, getMeta]
   );
 
-  return (
-    <DiagramContext.Provider value={value}>
-      {children}
-    </DiagramContext.Provider>
-  );
+  return <DiagramContext.Provider value={value}>{children}</DiagramContext.Provider>;
 }
 
-// --- Segment renderer (for Identity) ---
+// --- Segment renderer ---
 
-function renderSegment(
-  nodeIds: string[],
-  nodeType: NodeType,
-  flowIndex: number
-) {
+function renderSegment(nodeIds: string[], nodeType: NodeType, flowIndex: number, labels: DiagramLabels) {
   return nodeIds.map((nodeId, i) => (
     <Fragment key={nodeId}>
-      <Node nodeId={nodeId} nodeType={nodeType} />
+      <Node nodeId={nodeId} nodeType={nodeType} labels={labels} />
       {i < nodeIds.length - 1 && <Arrow flowIndex={flowIndex} />}
     </Fragment>
   ));
@@ -457,37 +455,37 @@ function renderSegment(
 
 // --- Payments diagram ---
 
-function PaymentsDiagram() {
+function PaymentsDiagram({ labels }: { labels: DiagramLabels }) {
   return (
     <div className="flex flex-col items-center gap-4 md:gap-6">
       <div className="flex flex-col md:flex-row items-center gap-2 md:gap-2">
-        <Node nodeId="client" nodeType="external" />
+        <Node nodeId="client" nodeType="external" labels={labels} />
         <Arrow flowIndex={0} />
         <div className="border-2 border-dashed border-sega-cyan/60 p-6 relative flex flex-col md:flex-row items-center justify-center gap-2 md:gap-2">
           <span className="absolute -top-2 left-4 font-pixel text-[10px] text-sega-cyan bg-sega-bg-dark border-2 border-sega-cyan px-2">
-            Internal System
+            {labels.internalSystem}
           </span>
-          <Node nodeId="api" nodeType="internal" />
+          <Node nodeId="api" nodeType="internal" labels={labels} />
         </div>
         <Arrow flowIndex={0} />
         <div className="flex flex-col items-center relative">
-          <Node nodeId="payment-provider" nodeType="external" />
+          <Node nodeId="payment-provider" nodeType="external" labels={labels} />
           <div className="hidden md:flex flex-col items-center absolute top-full mt-2">
-            <ArrowVerticalAsync flowIndex={1} />
+            <ArrowVerticalAsync flowIndex={1} asyncCallbackLabel={labels.asyncCallback} />
           </div>
         </div>
       </div>
       <div className="flex flex-col md:flex-row items-center w-full gap-2 md:gap-2 md:min-w-0">
         <div className="md:hidden">
-          <ArrowVerticalAsync flowIndex={1} />
+          <ArrowVerticalAsync flowIndex={1} asyncCallbackLabel={labels.asyncCallback} />
         </div>
         <div className="border-2 border-dashed border-sega-cyan/60 p-6 relative flex flex-col md:flex-row items-center justify-center gap-2 md:gap-2">
           <span className="absolute -top-2 left-4 font-pixel text-[10px] text-sega-cyan bg-sega-bg-dark border-2 border-sega-cyan px-2">
-            Internal System
+            {labels.internalSystem}
           </span>
-          <Node nodeId="webhook" nodeType="internal" />
+          <Node nodeId="webhook" nodeType="internal" labels={labels} />
           <Arrow flowIndex={1} />
-          <Node nodeId="database" nodeType="internal" />
+          <Node nodeId="database" nodeType="internal" labels={labels} />
         </div>
       </div>
     </div>
@@ -502,35 +500,33 @@ const IDENTITY_LAYOUT = {
   externalEnd: ["national-apis"] as const,
 };
 
-function IdentityDiagram() {
+function IdentityDiagram({ labels }: { labels: DiagramLabels }) {
   return (
     <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6">
       <div className="flex flex-col md:flex-row items-center gap-2 md:gap-2">
-        {renderSegment([...IDENTITY_LAYOUT.externalStart], "external", 0)}
+        {renderSegment([...IDENTITY_LAYOUT.externalStart], "external", 0, labels)}
       </div>
       <Arrow flowIndex={0} />
       <div className="border-2 border-dashed border-sega-cyan/60 p-6 relative flex flex-col md:flex-row items-center justify-center gap-2 md:gap-2">
         <span className="absolute -top-2 left-4 font-pixel text-[10px] text-sega-cyan bg-sega-bg-dark border-2 border-sega-cyan px-2">
-          Internal System
+          {labels.internalSystem}
         </span>
-        {renderSegment([...IDENTITY_LAYOUT.internal], "internal", 0)}
+        {renderSegment([...IDENTITY_LAYOUT.internal], "internal", 0, labels)}
       </div>
       <Arrow flowIndex={1} />
       <div className="flex flex-col md:flex-row items-center gap-2 md:gap-2">
-        {renderSegment([...IDENTITY_LAYOUT.externalEnd], "external", 1)}
+        {renderSegment([...IDENTITY_LAYOUT.externalEnd], "external", 1, labels)}
       </div>
     </div>
   );
 }
 
-// --- Export ---
+// --- System Invariants panel ---
 
-function SystemInvariantsPanel({ invariants }: { invariants: string[] }) {
+function SystemInvariantsPanel({ invariants, title }: { invariants: string[]; title: string }) {
   return (
     <div className="mt-6 pt-5 border-t-2 border-sega-cyan/40">
-      <p className="font-pixel text-[10px] text-sega-yellow mb-2">
-        System Invariants
-      </p>
+      <p className="font-pixel text-[10px] text-sega-yellow mb-2">{title}</p>
       <ul className="space-y-1.5 text-[11px] text-sega-white/80 leading-relaxed font-reading">
         {invariants.map((inv, i) => (
           <li key={i} className="flex gap-2">
@@ -543,21 +539,29 @@ function SystemInvariantsPanel({ invariants }: { invariants: string[] }) {
   );
 }
 
+// --- Export ---
+
 export default function ArchitectureDiagram({ type }: ArchitectureDiagramProps) {
-  const flowLabel = FLOW_LABEL[type];
+  const { lang } = useLanguage();
+  const labels = lang === "es" ? LABELS_ES : LABELS_EN;
   const config = type === "payments" ? PAYMENTS_CONFIG : IDENTITY_CONFIG;
-  const invariants = SYSTEM_INVARIANTS[type];
 
   return (
     <div className="mt-10 border-t-2 border-sega-cyan/40 pt-8">
       <p className="font-pixel text-xs text-sega-yellow mb-6">
-        {flowLabel}
+        {labels.flowLabel[type]}
       </p>
       <div className="bg-sega-bg-dark/80 border-2 border-sega-cyan/50 p-6">
         <DiagramProvider config={config}>
-          {type === "payments" ? <PaymentsDiagram /> : <IdentityDiagram />}
+          {type === "payments"
+            ? <PaymentsDiagram labels={labels} />
+            : <IdentityDiagram labels={labels} />
+          }
         </DiagramProvider>
-        <SystemInvariantsPanel invariants={invariants} />
+        <SystemInvariantsPanel
+          invariants={labels.systemInvariantsList[type]}
+          title={labels.systemInvariants}
+        />
       </div>
     </div>
   );
