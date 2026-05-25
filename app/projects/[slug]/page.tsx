@@ -159,7 +159,7 @@ export default async function ProjectPage({
   ] as const;
   const hasValidScaleConstraints = (o: Record<string, unknown> | undefined): o is ScaleConstraints =>
     !!o && scaleConstraintsKeys.every((k) => typeof (o as Record<string, unknown>)[k] === "string");
-  // Solo mostrar contenido del idioma seleccionado: EN solo usa campos EN de la API, ES solo _es. Fallback a estático si no hay datos en ese idioma.
+
   const displayScaleConstraints: ScaleConstraints =
     lang === "es"
       ? (hasValidScaleConstraints(apiCaseStudy?.scale_constraints_es)
@@ -172,14 +172,6 @@ export default async function ProjectPage({
     lang === "es"
       ? (apiCaseStudy?.rejected_approaches_es?.length ? apiCaseStudy.rejected_approaches_es : (project.rejectedApproachesEs ?? project.rejectedApproaches))
       : (apiCaseStudy?.rejected_approaches?.length ? apiCaseStudy.rejected_approaches : project.rejectedApproaches);
-  const displayWhatWouldBreak: string[] =
-    lang === "es"
-      ? (apiCaseStudy?.what_would_break_es?.length ? apiCaseStudy.what_would_break_es : (project.whatWouldBreakEs ?? project.whatWouldBreak))
-      : (apiCaseStudy?.what_would_break?.length ? apiCaseStudy.what_would_break : project.whatWouldBreak);
-  const displayDeepDive: { title: string; paragraphs: string[] }[] =
-    lang === "es"
-      ? (apiCaseStudy?.deep_dive_es?.length ? apiCaseStudy.deep_dive_es : (project.deepDiveEs ?? project.deepDive))
-      : (apiCaseStudy?.deep_dive?.length ? apiCaseStudy.deep_dive : project.deepDive);
   const displayAdrs =
     lang === "es"
       ? (apiCaseStudy?.adrs?.length ? apiCaseStudy.adrs : (project.adrsEs ?? project.adrs))
@@ -330,34 +322,6 @@ export default async function ProjectPage({
 
       <Section id="rejected" title={ui.caseStudy.rejected}>
         <RejectedBlock items={displayRejectedApproaches} />
-      </Section>
-
-      <Section id="what-would-break" title={ui.caseStudy.whatWouldBreak}>
-        <ul className="space-y-2 text-sm text-sega-white/80 font-reading">
-          {displayWhatWouldBreak.map((line, i) => (
-            <li key={i} className="flex gap-2">
-              <span className="text-sega-cyan shrink-0">•</span>
-              <span className="leading-relaxed">{line}</span>
-            </li>
-          ))}
-        </ul>
-      </Section>
-
-      <Section id="deep-dive" title={ui.project.deepDive}>
-        <div className="space-y-8">
-          {displayDeepDive.map((section) => (
-            <div key={section.title}>
-              <h3 className="font-pixel text-xs text-sega-yellow mb-3">
-                {section.title}
-              </h3>
-              <div className="space-y-3 text-sm text-sega-white/80 leading-relaxed font-reading">
-                {section.paragraphs.map((p, i) => (
-                  <p key={i}>{p}</p>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
       </Section>
 
       <footer className="border-t-2 border-sega-cyan/40 py-8 text-center font-pixel text-xs text-sega-cyan/80 space-x-2">
