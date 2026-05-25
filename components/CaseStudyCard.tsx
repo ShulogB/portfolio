@@ -29,7 +29,7 @@ export default function CaseStudyCard({
   externalUrl?: string;
   variant?: CaseStudyCardVariant;
 }) {
-  const { content } = useLanguage();
+  const { content, lang } = useLanguage();
   const ui = content.ui;
   const isCompact = variant === "compact";
 
@@ -104,7 +104,7 @@ export default function CaseStudyCard({
         </div>
       )}
       <div className="mt-8">
-        <Button href={`/projects/${slug}`} variant="secondary">
+        <Button href={`/projects/${slug}?lang=${lang}`} variant="secondary">
           {isCompact ? ui.caseStudy.viewDetails : ui.caseStudy.architectureAndDecisions}
         </Button>
       </div>

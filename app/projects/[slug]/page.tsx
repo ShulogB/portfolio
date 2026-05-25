@@ -103,11 +103,11 @@ function ScaleConstraintsBlock({
     { label: ui.caseStudy.scaleConstraintsRows.dataConsistency, value: data.dataConsistency },
   ];
   return (
-    <dl className="space-y-2 text-sm text-sega-white/80 font-reading">
+    <dl className="divide-y divide-sega-cyan/15">
       {rows.map(({ label, value }) => (
-        <div key={label} className="flex gap-2">
-          <dt className="shrink-0 w-[10rem] font-pixel text-xs text-sega-yellow">{label}</dt>
-          <dd className="leading-relaxed">{value}</dd>
+        <div key={label} className="flex gap-5 py-3 first:pt-0 last:pb-0">
+          <dt className="shrink-0 w-[9rem] font-pixel text-[10px] text-sega-yellow pt-0.5 leading-relaxed">{label}</dt>
+          <dd className="text-sm text-sega-white/75 leading-relaxed font-reading">{value}</dd>
         </div>
       ))}
     </dl>
@@ -116,11 +116,14 @@ function ScaleConstraintsBlock({
 
 function RejectedBlock({ items }: { items: RejectedApproach[] }) {
   return (
-    <ul className="space-y-3 text-sm text-sega-white/80 font-reading">
+    <ul className="space-y-5">
       {items.map((item, i) => (
-        <li key={i}>
-          <span className="text-sega-cyan">{item.approach}.</span>{" "}
-          <span className="leading-relaxed">{item.reason}</span>
+        <li key={i} className="flex gap-4 items-start">
+          <span className="font-pixel text-[10px] text-sega-red shrink-0 mt-1">✕</span>
+          <div className="space-y-1.5">
+            <p className="font-pixel text-[10px] text-sega-white/90 leading-relaxed">{item.approach}</p>
+            <p className="text-sm text-sega-white/60 leading-relaxed font-reading">{item.reason}</p>
+          </div>
         </li>
       ))}
     </ul>
@@ -270,9 +273,11 @@ export default async function ProjectPage({
       )}
 
       <Section id="overview" title={ui.project.overview}>
-        <p className="text-sm text-sega-white/80 leading-relaxed max-w-3xl font-reading">
-          {displayOverview}
-        </p>
+        <div className="border-l-2 border-sega-cyan/30 pl-5">
+          <p className="text-sm text-sega-white/80 leading-relaxed max-w-3xl font-reading">
+            {displayOverview}
+          </p>
+        </div>
         {displayAsciiDiagram && (
           <pre className="mt-6 p-4 border-2 border-sega-cyan/50 bg-sega-bg-dark font-mono text-xs text-sega-cyan leading-relaxed overflow-x-auto">
             <code>{displayAsciiDiagram}</code>
@@ -313,6 +318,23 @@ export default async function ProjectPage({
               );
             })}
           </div>
+        </Section>
+      )}
+
+      {displayAdrs.length > 0 && (
+        <Section id="adrs" title={ui.caseStudy.architectureDecisionRecords}>
+          <ul className="space-y-3">
+            {displayAdrs.map((adr, i) => (
+              <li key={i} className="flex gap-4 items-start">
+                <span className="font-pixel text-[10px] text-sega-cyan/50 shrink-0 pt-0.5">
+                  ADR-{String(i + 1).padStart(2, "0")}
+                </span>
+                <span className="text-sm text-sega-white/75 font-reading leading-snug">
+                  {adr.title}
+                </span>
+              </li>
+            ))}
+          </ul>
         </Section>
       )}
 

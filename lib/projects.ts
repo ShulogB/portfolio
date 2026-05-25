@@ -39,31 +39,23 @@ const patagoniaDreams: Project = {
   title: "Transactional Booking & Payment Platform",
   tech: "Payments • Webhooks • Concurrency",
   overview:
-    "Backend for Patagonia Dreams — a tourism operator with 180k+ passengers/year and 7,000+ five-star Google reviews. Built and led the platform from scratch with a focus on scalability and production security: transactional reservations and payments (Mercado Pago, Stripe, Pix), multi-tenant backoffice (partners and end customers), and integrations with Google (OAuth, My Business, Merchant Center), Meta, and Amazon SES. Bidirectional sync with an external activity panel: real-time availability and pricing pulled in, confirmed bookings injected back out automatically. Identity via AWS Cognito with JWKS token verification and SECRET_HASH; webhooks as single source of truth for \"reservation paid\" with HMAC validation and idempotency by event_id. Development follows a structured flow: feature branches → CI checks → PR review → merge to production; no direct pushes to the production branch. Stack: Django, DRF, PostgreSQL, AWS (SES, Cognito, Secrets Manager, ECR/K8s).",
+    "Backend for Patagonia Dreams — a tourism operator with 180k+ passengers/year and 7,000+ five-star Google reviews. Built and led the platform from scratch: transactional reservations and payments (Mercado Pago, Stripe, Pix), multi-tenant backoffice, and bidirectional sync with an external activity panel. The core invariant: a reservation is only 'paid' when the webhook confirms it — never based on client state. Webhooks are HMAC-validated and processed idempotently by event_id. Availability is locked pessimistically (SELECT FOR UPDATE) to serialize concurrent bookings on the same slot. Identity via AWS Cognito with JWKS token verification; all critical config from AWS Secrets Manager. Stack: Django, DRF, PostgreSQL, AWS (SES, Cognito, Secrets Manager, ECR/K8s).",
   diagramType: "payments",
   adrs: [
-    { title: "Use webhooks as single source of truth for payment status", href: "#" },
-    { title: "Idempotency keys on reservation creation and event_id on webhooks", href: "#" },
-    { title: "Pessimistic locking (SELECT FOR UPDATE) for availability", href: "#" },
-    { title: "Modular monolith with explicit domain boundaries", href: "#" },
-    { title: "HMAC validation for all incoming webhook payloads", href: "#" },
-    { title: "AWS Cognito as single identity entry; ID token verification with JWKS before trusting user data", href: "#" },
-    { title: "SECRET_HASH in all Cognito calls that require it (sign_up, confirm_sign_up, authenticate, refresh_token)", href: "#" },
-    { title: "JSON export instead of CSV to avoid Excel/CSV formula injection; URL validation (http_url) in email templates", href: "#" },
-    { title: "Critical config (Cognito, Stripe, Panel, etc.) via env from AWS Secrets Manager; no secrets in repo", href: "#" },
-    { title: "Structured development flow: feature branches → CI checks → PR review → merge to production; no direct pushes", href: "#" },
+    { title: "Webhooks as single source of truth for payment status — client redirect cannot set 'paid'", href: "#" },
+    { title: "Pessimistic locking (SELECT FOR UPDATE) on availability slot — concurrent bookings serialize, not race", href: "#" },
+    { title: "Idempotency keys on reservation creation; event_id deduplication on all incoming webhooks", href: "#" },
+    { title: "HMAC validation on every webhook payload before processing", href: "#" },
+    { title: "AWS Cognito as sole identity entry point; ID token verified with JWKS before trusting any user data", href: "#" },
+    { title: "All critical config via AWS Secrets Manager — no secrets in code or repo", href: "#" },
   ],
   adrsEs: [
-    { title: "Webhooks como única fuente de verdad del estado de pago", href: "#" },
-    { title: "Claves de idempotencia en creación de reservas y event_id en webhooks", href: "#" },
-    { title: "Bloqueo pesimista (SELECT FOR UPDATE) para disponibilidad", href: "#" },
-    { title: "Monolito modular con fronteras de dominio explícitas", href: "#" },
-    { title: "Validación HMAC en todos los payloads de webhook entrantes", href: "#" },
-    { title: "AWS Cognito como único punto de entrada de identidad; verificación de ID token con JWKS antes de confiar en datos del usuario", href: "#" },
-    { title: "SECRET_HASH en todas las llamadas a Cognito que lo requieren (sign_up, confirm_sign_up, authenticate, refresh_token)", href: "#" },
-    { title: "Export JSON en lugar de CSV para evitar inyección de fórmulas; validación de URL (http_url) en templates de email", href: "#" },
-    { title: "Config crítica (Cognito, Stripe, Panel, etc.) via env desde AWS Secrets Manager; sin secrets en el repo", href: "#" },
-    { title: "Flujo de desarrollo estructurado: ramas de feature → CI checks → PR review → merge a producción; sin pushes directos", href: "#" },
+    { title: "Webhooks como única fuente de verdad del estado de pago — el redirect del cliente no puede setear 'pagado'", href: "#" },
+    { title: "Bloqueo pesimista (SELECT FOR UPDATE) en el slot de disponibilidad — las reservas concurrentes se serializan, no compiten", href: "#" },
+    { title: "Claves de idempotencia en creación de reservas; deduplicación por event_id en todos los webhooks entrantes", href: "#" },
+    { title: "Validación HMAC en cada payload de webhook antes de procesarlo", href: "#" },
+    { title: "AWS Cognito como único punto de entrada de identidad; ID token verificado con JWKS antes de confiar en datos del usuario", href: "#" },
+    { title: "Toda la config crítica via AWS Secrets Manager — sin secrets en código ni repo", href: "#" },
   ],
   scaleConstraints: {
     requestVolume: "Operator with 180k+ passengers/year. Online platform reservations + webhook bursts up to ~50/min on peak.",
@@ -235,7 +227,7 @@ const patagoniaDreams: Project = {
   titleEs: "Plataforma transaccional de reservas y pagos",
   techEs: "Pagos • Webhooks • Concurrencia",
   overviewEs:
-    "Backend en Patagonia Dreams: identidad vía Cognito con verificación de tokens y SECRET_HASH; flujos de pago y reservas transaccionales; export seguro (JSON); sanitización de URLs en emails; secrets en AWS Secrets Manager; pipeline CI/CD con SAST y escaneo de secretos. Plataforma de reservas turísticas en producción. Backoffice multi-módulo, multi-tenant (socios y clientes finales). Pagos vía Mercado Pago, Stripe, Pix; webhooks como única fuente de verdad de 'reserva pagada', con validación HMAC e idempotencia por event_id. Stack: Django, DRF, PostgreSQL, AWS (SES, Cognito, ECR/K8s), Panel externo y pasarelas de pago.",
+    "Backend para Patagonia Dreams — operadora de turismo con +180k pasajeros/año y 7.000+ reseñas cinco estrellas en Google. Construí y lideré la plataforma desde cero: reservas y pagos transaccionales (Mercado Pago, Stripe, Pix), backoffice multi-tenant y sync bidireccional con un panel externo de actividades. El invariante central: una reserva solo está 'pagada' cuando el webhook lo confirma — nunca basado en el estado del cliente. Los webhooks se validan con HMAC y se procesan de forma idempotente por event_id. La disponibilidad se bloquea de forma pesimista (SELECT FOR UPDATE) para serializar reservas concurrentes en el mismo slot. Identidad via AWS Cognito con verificación de token JWKS; toda la config crítica desde AWS Secrets Manager. Stack: Django, DRF, PostgreSQL, AWS (SES, Cognito, Secrets Manager, ECR/K8s).",
 };
 
 const municipalIdentity: Project = {
