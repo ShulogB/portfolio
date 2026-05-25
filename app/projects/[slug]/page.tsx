@@ -164,23 +164,26 @@ export default async function ProjectPage({
     lang === "es"
       ? (hasValidScaleConstraints(apiCaseStudy?.scale_constraints_es)
           ? (apiCaseStudy!.scale_constraints_es as ScaleConstraints)
-          : project.scaleConstraints)
+          : (project.scaleConstraintsEs ?? project.scaleConstraints))
       : (hasValidScaleConstraints(apiCaseStudy?.scale_constraints)
           ? (apiCaseStudy!.scale_constraints as ScaleConstraints)
           : project.scaleConstraints);
   const displayRejectedApproaches: RejectedApproach[] =
     lang === "es"
-      ? (apiCaseStudy?.rejected_approaches_es?.length ? apiCaseStudy.rejected_approaches_es : project.rejectedApproaches)
+      ? (apiCaseStudy?.rejected_approaches_es?.length ? apiCaseStudy.rejected_approaches_es : (project.rejectedApproachesEs ?? project.rejectedApproaches))
       : (apiCaseStudy?.rejected_approaches?.length ? apiCaseStudy.rejected_approaches : project.rejectedApproaches);
   const displayWhatWouldBreak: string[] =
     lang === "es"
-      ? (apiCaseStudy?.what_would_break_es?.length ? apiCaseStudy.what_would_break_es : project.whatWouldBreak)
+      ? (apiCaseStudy?.what_would_break_es?.length ? apiCaseStudy.what_would_break_es : (project.whatWouldBreakEs ?? project.whatWouldBreak))
       : (apiCaseStudy?.what_would_break?.length ? apiCaseStudy.what_would_break : project.whatWouldBreak);
   const displayDeepDive: { title: string; paragraphs: string[] }[] =
     lang === "es"
-      ? (apiCaseStudy?.deep_dive_es?.length ? apiCaseStudy.deep_dive_es : project.deepDive)
+      ? (apiCaseStudy?.deep_dive_es?.length ? apiCaseStudy.deep_dive_es : (project.deepDiveEs ?? project.deepDive))
       : (apiCaseStudy?.deep_dive?.length ? apiCaseStudy.deep_dive : project.deepDive);
-  const displayAdrs = (apiCaseStudy?.adrs?.length ? apiCaseStudy.adrs : project.adrs) as { title: string; href: string }[];
+  const displayAdrs =
+    lang === "es"
+      ? (apiCaseStudy?.adrs?.length ? apiCaseStudy.adrs : (project.adrsEs ?? project.adrs))
+      : (apiCaseStudy?.adrs?.length ? apiCaseStudy.adrs : project.adrs) as { title: string; href: string }[];
   const displayDiagramType: "payments" | "identity" =
     apiCaseStudy?.diagram_type === "payments" || apiCaseStudy?.diagram_type === "identity"
       ? apiCaseStudy.diagram_type

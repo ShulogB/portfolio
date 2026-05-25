@@ -19,9 +19,9 @@
 }
 
 body {
-  font-family: var(--font-inter), system-ui, sans-serif;
-  font-size: 1.0625rem;
-  line-height: 1.65;
+  font-family: var(--font-inter), monospace;
+  font-size: 0.9375rem;
+  line-height: 1.7;
   background:
     repeating-linear-gradient(
       0deg,
@@ -48,9 +48,9 @@ body {
 /* Texto de lectura: tipografía clara */
 @layer utilities {
   .font-reading {
-    font-family: var(--font-inter), system-ui, sans-serif;
+    font-family: var(--font-inter), monospace;
     line-height: 1.7;
-    letter-spacing: 0.01em;
+    letter-spacing: 0em;
   }
 }
 

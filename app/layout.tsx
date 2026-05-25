@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { Inter, Press_Start_2P } from "next/font/google";
+import { Space_Mono, Press_Start_2P } from "next/font/google";
 import { content } from "@/lib/content";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { LANG_COOKIE_NAME } from "@/context/LanguageContext";
@@ -8,7 +8,8 @@ import LanguageToggle from "@/components/LanguageToggle";
 import TrackPageView from "@/components/TrackPageView";
 import "./globals.css";
 
-const inter = Inter({
+const spaceMono = Space_Mono({
+  weight: ["400", "700"],
   subsets: ["latin"],
   variable: "--font-inter",
   display: "swap",
@@ -110,7 +111,7 @@ export default async function RootLayout({
   const lang = cookieStore.get(LANG_COOKIE_NAME)?.value === "es" ? "es" : "en";
 
   return (
-    <html lang={lang} className={`${inter.variable} ${pressStart2P.variable}`}>
+    <html lang={lang} className={`${spaceMono.variable} ${pressStart2P.variable}`}>
       <body className="min-h-screen font-sans bg-sega-bg text-sega-white antialiased">
         <script
           type="application/ld+json"
