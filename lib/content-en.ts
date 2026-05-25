@@ -16,7 +16,7 @@ const en = {
   },
   /** Short intro above production project cards on the home page. */
   productionProjectsIntro:
-    "Systems running in production where I own or lead backend work. For the long technical version, open a project page.",
+    "Two systems I built and lead in production. Open a project for the full technical breakdown — ADRs, scale constraints, and failure modes.",
   problemResolutions: [
     {
       projectTitle: "Patagonia Dreams — booking platform",
@@ -110,7 +110,7 @@ const en = {
       title: "Transactional Booking & Payment Platform",
       tech: "Django · PostgreSQL · payments & catalog integrations",
       preview:
-        "Booking platform built from scratch for an operator with 180k+ passengers/year and 7,000+ five-star Google reviews. Transactional payments (Mercado Pago, Stripe, Pix) with webhooks as source of truth. Bidirectional sync with an external activity panel: real-time availability and pricing in, confirmed bookings injected back out. Multi-tenant backoffice, Google (My Business, Merchant Center), Meta, and Amazon SES integrations.",
+        "Booking platform for an operator with 180k+ passengers/year — built from scratch and running in production. The core constraint: a reservation is only 'paid' when the webhook says so, never based on client state. Webhooks are the single source of truth, validated with HMAC and processed idempotently by event_id. Availability is locked pessimistically (SELECT FOR UPDATE) so concurrent bookings on the same slot serialize rather than race.",
       diagramType: "payments" as const,
       adrs: [
         { title: "Use webhooks as single source of truth for payment status", href: "#" },
@@ -133,21 +133,6 @@ const en = {
         { title: "Fail safe when national identity APIs are unavailable", href: "#" },
         { title: "RBAC enforced at gateway and at service layer", href: "#" },
         { title: "Audit logging for authentication and token issuance", href: "#" },
-      ] as AdrLink[],
-    },
-    {
-      slug: "payment-orchestrator",
-      title: "Idempotent Payment Orchestrator",
-      tech: "Idempotency · outbox-style flows · webhooks",
-      preview:
-        "Design exercise for a retry-safe payment pipeline: idempotent starts, provider calls decoupled from the request lifecycle, and webhook application keyed so duplicates never double-apply state.",
-      diagramType: "payments" as const,
-      adrs: [
-        { title: "Idempotency key required for all payment initiation requests", href: "#" },
-        { title: "Outbox for provider calls; no side effects inside request lifecycle", href: "#" },
-        { title: "Webhook processing idempotent by provider event_id", href: "#" },
-        { title: "Transaction boundaries: single DB transaction per state transition", href: "#" },
-        { title: "Reconciliation and failure mode handling", href: "#" },
       ] as AdrLink[],
     },
   ],

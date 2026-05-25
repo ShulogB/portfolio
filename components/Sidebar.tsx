@@ -5,10 +5,9 @@ import { usePathname } from "next/navigation";
 const CASE_STUDY_LABELS: Record<string, string> = {
   "patagonia-dreams": "Patagonia Dreams",
   "municipal-identity": "Municipal Identity",
-  "payment-orchestrator": "Payment Orchestrator",
 };
 
-const CASE_STUDY_SLUGS = ["patagonia-dreams", "municipal-identity", "payment-orchestrator"] as const;
+const CASE_STUDY_SLUGS = ["patagonia-dreams", "municipal-identity"] as const;
 
 export type SectionId = "home" | "projects" | "problems" | "stack" | "contact";
 

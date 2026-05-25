@@ -54,24 +54,19 @@ body {
   }
 }
 
-/* Neon glow en texto — usado para el nombre y elementos clave */
+/* Glow sutil en texto — retro sin quemar los ojos */
 .neon-text {
   text-shadow:
-    0 0 6px rgba(0, 220, 255, 0.9),
-    0 0 14px rgba(0, 220, 255, 0.6),
-    0 0 30px rgba(0, 220, 255, 0.25);
+    0 0 8px rgba(0, 220, 255, 0.35),
+    0 0 20px rgba(0, 220, 255, 0.12);
 }
 
 .neon-text-sm {
-  text-shadow:
-    0 0 4px rgba(0, 220, 255, 0.8),
-    0 0 10px rgba(0, 220, 255, 0.4);
+  text-shadow: 0 0 6px rgba(0, 220, 255, 0.3);
 }
 
 .neon-yellow {
-  text-shadow:
-    0 0 4px rgba(255, 224, 102, 0.8),
-    0 0 12px rgba(255, 224, 102, 0.35);
+  text-shadow: 0 0 6px rgba(255, 224, 102, 0.3);
 }
 
 /* Cursor parpadeante */
@@ -101,12 +96,10 @@ body {
 /* Ítem activo del sidebar con glow pulsante */
 @keyframes sega-glow-pulse {
   0%, 100% {
-    box-shadow: inset 0 0 0 1px rgba(0, 220, 255, 0.18);
-    text-shadow: 0 0 6px rgba(0, 220, 255, 0.5);
+    box-shadow: inset 0 0 0 1px rgba(0, 220, 255, 0.12);
   }
   50% {
-    box-shadow: inset 0 0 12px 1px rgba(0, 220, 255, 0.12);
-    text-shadow: 0 0 10px rgba(0, 220, 255, 0.8), 0 0 20px rgba(0, 220, 255, 0.3);
+    box-shadow: inset 0 0 10px 1px rgba(0, 220, 255, 0.08);
   }
 }
 

@@ -10,10 +10,9 @@ import type { CaseStudyCardContent } from "@/lib/content";
 const CASE_STUDY_LABELS: Record<string, string> = {
   "patagonia-dreams": "Patagonia Dreams",
   "municipal-identity": "Municipal Identity",
-  "payment-orchestrator": "Payment Orchestrator",
 };
 
-const SLUGS = ["patagonia-dreams", "municipal-identity", "payment-orchestrator"] as const;
+const SLUGS = ["patagonia-dreams", "municipal-identity"] as const;
 
 type CaseStudiesPanelProps = {
   selectedSlug: string;
@@ -60,10 +59,10 @@ export default function CaseStudiesPanel({ selectedSlug, onSelect }: CaseStudies
             role="tab"
             aria-selected={selectedSlug === slug}
             onClick={() => onSelect(slug)}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            className={`px-4 py-2 text-[10px] font-pixel transition-colors ${
               selectedSlug === slug
-                ? "bg-sega-cyan/20 text-sega-cyan"
-                : "text-sega-white/60 hover:text-sega-white"
+                ? "bg-sega-cyan/15 text-sega-cyan border border-sega-cyan/50"
+                : "text-sega-muted hover:text-sega-white border border-transparent"
             }`}
           >
             {CASE_STUDY_LABELS[slug]}

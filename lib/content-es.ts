@@ -77,7 +77,7 @@ const es = {
       "Especializado en pagos (Mercado Pago, Stripe, Pix), identidad (AFIP, ANSES, RENAPER, Mi Argentina) e integraciones con terceros (Google, Meta, Amazon SES). Diseño sistemas que se mantienen correctos bajo concurrencia y escalan junto con el negocio.",
   },
   productionProjectsIntro:
-    "Sistemas en producción donde lidero o lideré el backend. La versión larga está en la página de cada proyecto.",
+    "Dos sistemas que construí y lidero en producción. Abrí un proyecto para ver el desglose técnico completo: ADRs, restricciones de escala y modos de falla.",
   problemResolutions: [
     {
       projectTitle: "Patagonia Dreams — plataforma de reservas",
@@ -147,7 +147,7 @@ const es = {
       title: "Plataforma transaccional de reservas y pagos",
       tech: "Django · PostgreSQL · pagos e integración con catálogo",
       preview:
-        "Plataforma de reservas construida desde cero para una operadora con +180k pasajeros/año y +7.000 reseñas 5 estrellas en Google. Pagos transaccionales (Mercado Pago, Stripe, Pix) con webhooks como source of truth. Sincronización bidireccional con un panel externo de actividades: disponibilidad y precios en tiempo real, e inyección automática de reservas confirmadas. Backoffice multi-tenant, integraciones con Google (My Business, Merchant Center), Meta y Amazon SES.",
+        "Plataforma de reservas para una operadora con +180k pasajeros/año — construida desde cero y en producción. La restricción central: una reserva solo es 'pagada' cuando el webhook lo confirma, nunca por estado del cliente. Los webhooks son la única fuente de verdad, validados con HMAC y procesados idempotentemente por event_id. La disponibilidad se bloquea de forma pesimista (SELECT FOR UPDATE) para que reservas concurrentes en el mismo slot se serialicen en lugar de generar una carrera.",
       diagramType: "payments" as const,
       adrs: [
         { title: "Webhooks como única fuente de verdad del estado de pago", href: "#" },
@@ -170,21 +170,6 @@ const es = {
         { title: "Fail safe cuando las APIs nacionales de identidad no están disponibles", href: "#" },
         { title: "RBAC aplicado en gateway y en capa de servicio", href: "#" },
         { title: "Auditoría de autenticación y emisión de tokens", href: "#" },
-      ] as AdrLink[],
-    },
-    {
-      slug: "payment-orchestrator",
-      title: "Orquestador de pagos idempotente",
-      tech: "Idempotencia · flujos tipo outbox · webhooks",
-      preview:
-        "Ejercicio de diseño: pipeline de pagos tolerante a reintentos—altas idempotentes, llamadas a proveedor desacopladas del request, y aplicación de webhooks sin doble aplicar estado.",
-      diagramType: "payments" as const,
-      adrs: [
-        { title: "Clave de idempotencia requerida para todas las solicitudes de pago", href: "#" },
-        { title: "Outbox para llamadas a proveedores; sin efectos secundarios en el request", href: "#" },
-        { title: "Procesamiento de webhooks idempotente por event_id del proveedor", href: "#" },
-        { title: "Transacciones: una transacción DB por transición de estado", href: "#" },
-        { title: "Reconciliación y manejo de modos de falla", href: "#" },
       ] as AdrLink[],
     },
   ],
