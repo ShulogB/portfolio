@@ -5,16 +5,15 @@ import {
   SiPostgresql,
   SiDjango,
   SiDocker,
-  SiJenkins,
   SiGithubactions,
-  SiCloudflare,
   SiStripe,
   SiMercadopago,
-  SiKeycloak,
   SiPython,
   SiGoogle,
   SiMeta,
+  SiPix,
 } from "react-icons/si";
+import { TbBrandAws, TbMail, TbShieldLock, TbGitMerge } from "react-icons/tb";
 import type { IconType } from "react-icons";
 
 const ICON_MAP: Record<string, IconType> = {
@@ -22,14 +21,16 @@ const ICON_MAP: Record<string, IconType> = {
   PostgreSQL: SiPostgresql,
   "Django REST Framework": SiDjango,
   Docker: SiDocker,
-  "CI/CD": SiJenkins,
   "GitHub Actions": SiGithubactions,
-  AWS: SiCloudflare,
+  "CI/CD": TbGitMerge,
+  AWS: TbBrandAws,
   Stripe: SiStripe,
   "Mercado Pago": SiMercadopago,
-  Cognito: SiKeycloak,
+  Cognito: TbShieldLock,
+  "Amazon SES": TbMail,
   "Google OAuth": SiGoogle,
   Meta: SiMeta,
+  Pix: SiPix,
 };
 
 type StackTagsProps = {
@@ -38,7 +39,19 @@ type StackTagsProps = {
   itemsIntegrations?: string[];
 };
 
-function TagList({ items }: { items: string[] }) {
+function SectionDivider({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-3 w-full">
+      <div className="h-px flex-1 bg-sega-cyan/20" />
+      <span className="font-pixel text-[9px] text-sega-yellow/70 uppercase tracking-widest whitespace-nowrap">
+        {label}
+      </span>
+      <div className="h-px flex-1 bg-sega-cyan/20" />
+    </div>
+  );
+}
+
+function TagList({ items, dim = false }: { items: string[]; dim?: boolean }) {
   return (
     <div className="flex flex-wrap justify-center gap-2">
       {items.map((item) => {
@@ -46,10 +59,21 @@ function TagList({ items }: { items: string[] }) {
         return (
           <span
             key={item}
-            className="inline-flex items-center justify-center gap-2 w-[190px] min-h-[44px] border-2 border-sega-cyan/50 bg-sega-bg-dark px-3 py-2 text-xs font-pixel text-sega-cyan"
+            className={`
+              inline-flex items-center gap-2 px-4 py-2 border
+              font-pixel text-[10px] leading-none
+              transition-all duration-150 cursor-default
+              ${dim
+                ? "border-sega-cyan/30 text-sega-cyan/60 bg-transparent hover:border-sega-cyan/60 hover:text-sega-cyan/80"
+                : "border-sega-cyan/50 text-sega-cyan bg-sega-bg-dark hover:border-sega-cyan hover:bg-sega-cyan/8 hover:shadow-[0_0_8px_rgba(0,220,255,0.15)]"
+              }
+            `}
           >
             {Icon && (
-              <Icon className="h-4 w-4 shrink-0 text-sega-cyan/90" aria-hidden />
+              <Icon
+                className={`h-[15px] w-[15px] shrink-0 ${dim ? "opacity-60" : "opacity-80"}`}
+                aria-hidden
+              />
             )}
             {item}
           </span>
@@ -59,34 +83,30 @@ function TagList({ items }: { items: string[] }) {
   );
 }
 
-export default function StackTags({ itemsPrincipal, itemsComplementary = [], itemsIntegrations = [] }: StackTagsProps) {
+export default function StackTags({
+  itemsPrincipal,
+  itemsComplementary = [],
+  itemsIntegrations = [],
+}: StackTagsProps) {
   const { lang } = useLanguage();
 
   return (
-    <div className="space-y-5 w-full">
-      <div className="space-y-2">
-        <h3 className="font-pixel text-[10px] uppercase tracking-widest text-sega-yellow/90 text-center">
-          {lang === "es" ? "Stack principal" : "Core stack"}
-        </h3>
-        <TagList items={itemsPrincipal} />
-      </div>
+    <div className="space-y-4 w-full">
+      <SectionDivider label={lang === "es" ? "Stack principal" : "Core stack"} />
+      <TagList items={itemsPrincipal} />
 
       {itemsComplementary.length > 0 && (
-        <div className="space-y-2">
-          <h3 className="font-pixel text-[10px] uppercase tracking-widest text-sega-yellow/75 text-center">
-            {lang === "es" ? "Conocimientos complementarios" : "Complementary knowledge"}
-          </h3>
-          <TagList items={itemsComplementary} />
-        </div>
+        <>
+          <SectionDivider label={lang === "es" ? "Infraestructura & DevOps" : "Infrastructure & DevOps"} />
+          <TagList items={itemsComplementary} dim />
+        </>
       )}
 
       {itemsIntegrations.length > 0 && (
-        <div className="space-y-2">
-          <h3 className="font-pixel text-[10px] uppercase tracking-widest text-sega-yellow/60 text-center">
-            {lang === "es" ? "Integraciones" : "Integrations"}
-          </h3>
-          <TagList items={itemsIntegrations} />
-        </div>
+        <>
+          <SectionDivider label={lang === "es" ? "Integraciones" : "Integrations"} />
+          <TagList items={itemsIntegrations} dim />
+        </>
       )}
     </div>
   );
