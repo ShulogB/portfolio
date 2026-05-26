@@ -86,16 +86,16 @@ export default function MiniSnakeGame() {
       const fade   = Math.max(0.35, 1 - (i / len) * 0.55);
 
       if (flash) {
-        ctx.fillStyle  = `rgba(255,107,122,${fade})`;
+        ctx.fillStyle   = `rgba(255,107,122,${fade})`;
         ctx.shadowColor = C_DEAD;
         ctx.shadowBlur  = isHead ? 14 : 0;
       } else if (isHead) {
-        ctx.fillStyle  = C_HEAD;
+        ctx.fillStyle   = C_HEAD;
         ctx.shadowColor = C_HEAD;
         ctx.shadowBlur  = 14;
       } else {
         ctx.fillStyle  = `rgba(0,184,217,${fade})`;
-        ctx.shadowBlur  = 0;
+        ctx.shadowBlur = 0;
       }
       ctx.fillRect(seg.x * CELL + 1, seg.y * CELL + 1, CELL - 2, CELL - 2);
 
@@ -137,7 +137,7 @@ export default function MiniSnakeGame() {
           clearInterval(fi);
           draw(false);
           setPhase("dead");
-          setHiScore((h) => Math.max(h, s.score));
+          setHiScore((prev) => Math.max(prev, s.score));
         }
       }, 120);
       return;
@@ -199,29 +199,24 @@ export default function MiniSnakeGame() {
                         "w","a","s","d","W","A","S","D"];
 
     const onKey = (e: KeyboardEvent) => {
-      // ESC: pause ↔ resume
       if (e.key === "Escape") {
         if (phase === "playing") { e.preventDefault(); pauseGame(); return; }
         if (phase === "paused")  { e.preventDefault(); resumeGame(); return; }
         return;
       }
-      // P: toggle pause
       if (e.key === "p" || e.key === "P") {
         if (phase === "playing") { e.preventDefault(); pauseGame(); return; }
         if (phase === "paused")  { e.preventDefault(); resumeGame(); return; }
       }
-      // R: restart from any state
       if (e.key === "r" || e.key === "R") {
         e.preventDefault();
         startGame();
         return;
       }
-      // Start game from idle/dead
       if (phase === "idle" || phase === "dead") {
         if (START_KEYS.includes(e.key)) { e.preventDefault(); startGame(); }
         return;
       }
-      // Direction keys during play
       if (phase === "playing") {
         const newDir = DIR_MAP[e.key];
         if (!newDir) return;
@@ -258,15 +253,12 @@ export default function MiniSnakeGame() {
   // ── labels ────────────────────────────────────────────────────────────────
   const es = lang === "es";
   const L = {
-    idle:    es ? "[ ESPACIO / CLICK PARA JUGAR ]"    : "[ SPACE / CLICK TO PLAY ]",
-    dead:    es ? "GAME OVER — ESPACIO PARA REINICIAR" : "GAME OVER — SPACE TO RESTART",
-    paused:  es ? "EN PAUSA"                           : "PAUSED",
-    resume:  es ? "CLICK PARA CONTINUAR"               : "CLICK TO RESUME",
-    exit:    es ? "× SALIR"                            : "× EXIT",
-    pause:   es ? "❙❙ PAUSAR"                          : "❙❙ PAUSE",
-    restart: es ? "↺ REINICIAR"                        : "↺ RESTART",
-    score:   es ? "PUNTOS" : "SCORE",
-    hint:    es ? "flechas / wasd  ·  P pausar  ·  R reiniciar" : "arrows / wasd  ·  P pause  ·  R restart",
+    idle:     es ? "[ ESPACIO / CLICK PARA JUGAR ]"    : "[ SPACE / CLICK TO PLAY ]",
+    dead:     es ? "GAME OVER — ESPACIO PARA REINICIAR" : "GAME OVER — SPACE TO RESTART",
+    paused:   es ? "EN PAUSA"                           : "PAUSED",
+    resume:   es ? "CLICK PARA CONTINUAR"               : "CLICK TO RESUME",
+    score:    es ? "PUNTOS" : "SCORE",
+    hint:     es ? "flechas / wasd  ·  P pausar  ·  R reiniciar" : "arrows / wasd  ·  P pause  ·  R restart",
     filename: "snake.exe",
   };
 
@@ -281,16 +273,12 @@ export default function MiniSnakeGame() {
       onTouchEnd={handleTouchEnd}
       aria-label="Snake mini-game"
     >
-      {/* ── title bar ── */}
+      {/* title bar */}
       <div className="flex items-center gap-2 px-3 py-2 border-b border-sega-cyan/20">
-        {/* Traffic-light dots */}
         <span className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
         <span className="w-2.5 h-2.5 rounded-full bg-yellow-400/80" />
         <span className="w-2.5 h-2.5 rounded-full bg-green-400/80" />
-
         <span className="text-[9px] text-sega-cyan/45 ml-1 tracking-widest">{L.filename}</span>
-
-        {/* Scores */}
         <div className="ml-auto flex items-center gap-4">
           <span className="text-[8px] text-sega-cyan/30">
             BEST: <span className="text-sega-yellow/60">{String(hiScore).padStart(3, "0")}</span>
@@ -301,7 +289,7 @@ export default function MiniSnakeGame() {
         </div>
       </div>
 
-      {/* ── canvas wrapper ── */}
+      {/* canvas wrapper */}
       <div className="relative" style={{ width: W, height: H }}>
         <canvas
           ref={canvasRef}
@@ -314,14 +302,14 @@ export default function MiniSnakeGame() {
           className="block cursor-pointer"
         />
 
-        {/* ── idle overlay ── */}
+        {/* idle overlay */}
         {phase === "idle" && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-sega-bg/60 pointer-events-none">
             <p className="text-[9px] text-sega-cyan/70 tracking-widest animate-pulse">{L.idle}</p>
           </div>
         )}
 
-        {/* ── paused overlay ── */}
+        {/* paused overlay */}
         {phase === "paused" && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-sega-bg/70">
             <p className="text-[11px] text-sega-cyan tracking-[0.3em]">{L.paused}</p>
@@ -332,27 +320,27 @@ export default function MiniSnakeGame() {
                 onClick={(e) => { e.stopPropagation(); resumeGame(); }}
                 className="text-[8px] border border-sega-cyan/40 text-sega-cyan/70 hover:text-sega-cyan hover:border-sega-cyan/80 px-3 py-1.5 transition-colors"
               >
-                ▶ {es ? "CONTINUAR" : "RESUME"}
+                {es ? "▶ CONTINUAR" : "▶ RESUME"}
               </button>
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); startGame(); }}
                 className="text-[8px] border border-sega-cyan/20 text-sega-cyan/40 hover:text-sega-cyan/70 hover:border-sega-cyan/50 px-3 py-1.5 transition-colors"
               >
-                ↺ {es ? "REINICIAR" : "RESTART"}
+                {es ? "↺ REINICIAR" : "↺ RESTART"}
               </button>
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); exitGame(); }}
                 className="text-[8px] border border-red-500/20 text-red-400/40 hover:text-red-400/70 hover:border-red-500/50 px-3 py-1.5 transition-colors"
               >
-                × {es ? "SALIR" : "EXIT"}
+                {es ? "× SALIR" : "× EXIT"}
               </button>
             </div>
           </div>
         )}
 
-        {/* ── dead overlay ── */}
+        {/* dead overlay */}
         {phase === "dead" && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-sega-bg/60 pointer-events-none">
             <p className="text-[10px] text-red-400/80 tracking-widest">{L.dead}</p>
@@ -363,12 +351,9 @@ export default function MiniSnakeGame() {
         )}
       </div>
 
-      {/* ── bottom bar: controls row ── */}
+      {/* bottom bar */}
       <div className="flex items-center justify-between px-3 py-2 border-t border-sega-cyan/10">
-        {/* Hint text */}
         <span className="text-[7px] text-sega-cyan/18 tracking-wider">{L.hint}</span>
-
-        {/* Pause / Resume button — visible when playing or paused */}
         {(isPlaying || isPaused) && (
           <button
             type="button"
@@ -376,7 +361,9 @@ export default function MiniSnakeGame() {
             className="text-[8px] border border-sega-cyan/25 text-sega-cyan/45 hover:text-sega-cyan/80 hover:border-sega-cyan/55 px-2 py-1 transition-colors ml-4 shrink-0"
             title={isPaused ? (es ? "Continuar" : "Resume") : (es ? "Pausar" : "Pause")}
           >
-            {isPaused ? `▶ ${es ? "CONTINUAR" : "RESUME"}` : `❙❙ ${es ? "PAUSAR" : "PAUSE"}`}
+            {isPaused
+              ? (es ? "▶ CONTINUAR" : "▶ RESUME")
+              : (es ? "❙❙ PAUSAR" : "❙❙ PAUSE")}
           </button>
         )}
       </div>
