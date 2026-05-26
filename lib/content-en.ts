@@ -61,6 +61,54 @@ const en = {
           impact:
             "Injection vector gone. Operations staff get structured data with full fidelity; no formula execution risk regardless of input content.",
         },
+        {
+          context:
+            "Some card payments with Mercado Pago were failing payer validation silently — no explicit error on our side, but customers saw the checkout break. Nothing looked wrong in our logs.",
+          whatYouDid:
+            "MP expects {area_code: '11', number: '12345678'}, but users submit phone numbers in dozens of formats (+5491112345678, with/without the mobile 9, no country prefix, etc.). Built a normaliser that strips non-digits, removes the 54 country code, strips the mobile 9 where applicable, then splits into area_code + number. If the result has fewer than 8 total digits, it sends null and omits the field entirely rather than passing garbage.",
+          impact:
+            "Silent failure mode closed. The phone field now only travels when valid; MP stops rejecting payers over format. Fix required reading the undocumented edge cases in MP's payer spec, not the happy path.",
+        },
+        {
+          context:
+            "When a group of reservations was paid in instalments or with two payment methods, the second webhook arrived approved but the system marked it as 'partial payment' and didn't release the reservation. Operations had to intervene manually every time.",
+          whatYouDid:
+            "The original flow called GET /v1/payments/search inside transaction.atomic() to sum all approved payments with the same external_reference. The Search API has eventual consistency — a payment_id that just approved may not appear in search results for a few seconds. Moved the Search call before the lock; added an explicit guard: if payment_id is missing from search results, add the verified amount manually (the payment was already confirmed via GET /payments/{id} which is consistent). Also added a fast-path: if the current payment alone covers the expected total, approve without calling Search.",
+          impact:
+            "False rejections on split payments eliminated. Fast-path reduced Search API calls in the most common single-payment case. Fix required reading MP's eventual consistency docs buried outside the main webhook guide.",
+        },
+        {
+          context:
+            "Flash deals and coupons with past expiry dates kept appearing as available at checkout. The team loaded them with an expiry date and expected the system to deactivate them automatically — but nothing did.",
+          whatYouDid:
+            "No Celery, no cron. The solution was write-on-read: run check_and_update_expired_discounts() inside the read path — every time the promotions or coupons lists are fetched, an UPDATE runs on expired records and Redis cache is invalidated if anything changed. Change frequency is low enough that the extra write cost is acceptable without worker infrastructure.",
+          impact:
+            "Expired discounts deactivate automatically within minutes of the next read. No manual intervention, no external cron, no infra cost. The pattern trades a small write overhead for complete operational simplicity.",
+        },
+        {
+          context:
+            "Activities with a cutoff of 'book by 18:00 the day before' started rejecting reservations from 15:00. Guides reported customers couldn't book during slots that should still be open. The bug only appeared in production, not locally.",
+          whatYouDid:
+            "The validation compared timezone.localtime() against the cutoff time. The server (Railway) ran in UTC and TIME_ZONE wasn't set to America/Argentina/Buenos_Aires, so localtime() returned UTC — which is UTC-3 relative to Argentina. The cutoff effectively fired 3 hours early. Fixed by setting TIME_ZONE = 'America/Argentina/Buenos_Aires' with USE_TZ = True, and making every datetime comparison use timezone.localtime() explicitly instead of datetime.now().",
+          impact:
+            "Booking window aligned with Buenos Aires real time. False rejections in the 15:00–18:00 window eliminated. Classic production-only bug: local dev and Railway were in different timezones and nothing failed loudly.",
+        },
+        {
+          context:
+            "On slow connections, the frontend retried the payment preference creation call if it didn't get a response in time. This created two distinct MP preferences for the same booking — customers saw two payment links, and if they paid both, we had an overcharge.",
+          whatYouDid:
+            "Added an x-idempotency-key to the preference creation request: a SHA-256 hash over the deterministic fields of the payload (booking IDs, amounts, external reference). MP guarantees requests with the same idempotency key within a window return the existing preference without creating a new one. The key is computed once with hashlib.sha256 over the serialised relevant payload.",
+          impact:
+            "Double-preference failure mode closed. Frontend retries are idempotent by construction. The fix required no changes to the frontend — just the right key on the server side before calling MP.",
+        },
+        {
+          context:
+            "After introducing payment_group_id (UUID) to group multiple bookings under one payment, alerts started firing for MP webhooks that couldn't find any booking. They were old reservations created before the field existed.",
+          whatYouDid:
+            "The new webhook searched exclusively by payment_group_id. Added backward-compat logic: if no booking is found by payment_group_id, fall back to booking_id (the old path), and if found, backfill payment_group_id on the booking at that point so future webhooks hit the fast path. The code logs 'legacy booking without payment_group_id' explicitly for transition visibility.",
+          impact:
+            "Zero orphaned bookings during migration. The field self-fills on the first webhook hit — no mass migration script, no downtime, no manual backfill. The transition period was observable from logs.",
+        },
       ],
     },
     {

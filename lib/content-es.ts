@@ -122,6 +122,54 @@ const es = {
           impact:
             "Vector de inyección eliminado. El equipo de operaciones recibe datos estructurados con fidelidad completa; sin riesgo de ejecución de fórmulas sin importar el contenido ingresado.",
         },
+        {
+          context:
+            "Algunos pagos con tarjeta en Mercado Pago fallaban en la validación del payer sin error explícito de nuestro lado. El cliente veía el checkout caído; nosotros no veíamos nada roto en los logs.",
+          whatYouDid:
+            "MP espera {area_code: '11', number: '12345678'}, pero los usuarios cargan el teléfono en decenas de formatos distintos (+5491112345678, con/sin el 9 móvil, sin prefijo internacional, etc.). Escribí un normalizador que stripea todo lo que no es dígito, quita el código de país 54, quita el 9 móvil si aplica, y parte en area_code + number. Si el resultado tiene menos de 8 dígitos totales, manda null y omite el campo en lugar de mandar basura.",
+          impact:
+            "Modo de falla silencioso cerrado. El campo phone ahora solo viaja cuando es válido; MP deja de rechazar el payer por formato. El fix requirió leer los edge cases no documentados de la spec de payer de MP, no el happy path.",
+        },
+        {
+          context:
+            "Cuando un grupo de reservas se pagaba en cuotas o con dos medios de pago, el segundo webhook llegaba aprobado pero el sistema lo marcaba como 'pago parcial' y no liberaba la reserva. El equipo de operaciones tenía que intervenir manualmente cada vez.",
+          whatYouDid:
+            "El flujo original llamaba a GET /v1/payments/search dentro de transaction.atomic() para sumar todos los pagos aprobados con el mismo external_reference. La Search API de MP tiene eventual consistency — el payment_id que acaba de aprobarse puede no aparecer en los resultados por algunos segundos. Moví la llamada a Search antes del lock; agregué una guarda explícita: si payment_id no está en los resultados, sumo el monto verificado manualmente (el pago ya fue confirmado vía GET /payments/{id} que sí es consistente). También agregué un fast-path: si el pago actual cubre el total esperado solo, aprueba sin llamar a Search.",
+          impact:
+            "Falsos rechazos en split payments eliminados. El fast-path redujo llamadas a la Search API en el caso más común (pago único). El fix requirió leer la documentación de eventual consistency de MP que está fuera de la guía principal de webhooks.",
+        },
+        {
+          context:
+            "Flash deals y cupones con fecha de expiración pasada seguían apareciendo como disponibles en el checkout. El equipo los cargaba con fecha de vencimiento y esperaba que el sistema los desactivara solo — pero nada lo hacía.",
+          whatYouDid:
+            "Sin Celery, sin cron. La solución fue write-on-read: ejecutar check_and_update_expired_discounts() dentro del path de lectura — cada vez que se piden las listas de promociones o cupones, se corre un UPDATE sobre los registros expirados y se invalida el cache Redis si hubo cambios. La frecuencia de cambio es lo suficientemente baja como para que el costo de escritura extra sea aceptable sin infraestructura de workers.",
+          impact:
+            "Los descuentos expirados se desactivan automáticamente en minutos del próximo read. Sin intervención manual, sin cron externo, sin costo de infraestructura. El patrón intercambia un pequeño overhead de escritura por simplicidad operativa completa.",
+        },
+        {
+          context:
+            "Actividades con corte de reserva 'hasta las 18:00 del día anterior' empezaban a rechazar reservas desde las 15:00. Los guías reportaban que clientes no podían reservar en horarios que deberían estar habilitados. El bug solo aparecía en producción, no en local.",
+          whatYouDid:
+            "La validación comparaba timezone.localtime() contra el horario de corte. El servidor (Railway) corría en UTC y TIME_ZONE no estaba seteado a America/Argentina/Buenos_Aires, por lo que localtime() devolvía UTC — que es UTC-3 respecto de Argentina. El corte disparaba 3 horas antes. El fix fue setear TIME_ZONE = 'America/Argentina/Buenos_Aires' con USE_TZ = True, y que toda comparación de fecha/hora use timezone.localtime() explícitamente en lugar de datetime.now().",
+          impact:
+            "Ventana de reserva alineada con el horario real de Buenos Aires. Falsos rechazos en el rango 15:00–18:00 eliminados. Bug clásico de producción: local y Railway corrían en zonas horarias distintas y nada fallaba en voz alta.",
+        },
+        {
+          context:
+            "En conexiones lentas, el frontend reintentaba la llamada de creación de preferencia de pago si no recibía respuesta a tiempo. Esto generaba dos preferencias distintas en MP para la misma reserva — el cliente veía dos links de pago, y si pagaba ambos, teníamos un sobrepago.",
+          whatYouDid:
+            "Agregué x-idempotency-key al request de creación de preferencia: un SHA-256 sobre los campos determinísticos del payload (IDs de reserva, montos, external reference). MP garantiza que requests con el mismo idempotency key dentro de una ventana devuelven la preferencia existente sin crear una nueva. La clave se calcula con hashlib.sha256 sobre el payload relevante serializado.",
+          impact:
+            "Modo de falla de doble preferencia cerrado. Los reintentos del frontend son idempotentes por construcción. El fix no requirió cambios en el frontend — solo la key correcta del lado del servidor antes de llamar a MP.",
+        },
+        {
+          context:
+            "Después de introducir payment_group_id (UUID) para agrupar múltiples reservas bajo un pago, empezaron a llegar alertas de webhooks de MP que no encontraban ningún booking. Eran reservas antiguas creadas antes de que existiera el campo.",
+          whatYouDid:
+            "El webhook nuevo buscaba exclusivamente por payment_group_id. Agregué lógica de backward-compat: si no se encuentra booking por payment_group_id, fallback a booking_id (el path antiguo), y si se encuentra, se propaga payment_group_id al booking en ese momento para que futuros webhooks tomen el fast-path. El código loguea explícitamente 'booking antiguo sin payment_group_id' para visibilidad del período de transición.",
+          impact:
+            "Cero reservas huérfanas durante la migración. El campo se autorrellena en el primer webhook — sin script de migración masiva, sin downtime, sin backfill manual. El período de transición fue observable desde los logs.",
+        },
       ],
     },
     {
