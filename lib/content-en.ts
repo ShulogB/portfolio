@@ -23,19 +23,43 @@ const en = {
       items: [
         {
           context:
+            "Concurrent reservation requests for the same slot both read 'available' before either committed — a classic read-modify-write race that caused double bookings on high-demand activities.",
+          whatYouDid:
+            "Added SELECT FOR UPDATE on the availability row inside the same transaction that creates the reservation. The second request blocks until the first commits or rolls back, then sees updated state and either succeeds or fails cleanly.",
+          impact:
+            "Double bookings eliminated at the DB boundary. No application-level lock, no retry logic — the database is the serialisation point and the behaviour is deterministic.",
+        },
+        {
+          context:
+            "Payment flow initially relied on the provider redirect callback to mark a reservation as 'paid'. On real traffic, tab closures, provider retries, and network drops meant the callback arrived late, twice, or not at all.",
+          whatYouDid:
+            "Moved 'reservation paid' to be set exclusively by the webhook handler — never by the redirect. HMAC validation on every incoming payload; idempotent processing by event_id inside a single DB transaction.",
+          impact:
+            "Payment state became consistent regardless of client behaviour. Duplicate webhooks are safe no-ops. The redirect is now UI-only; it never drives state.",
+        },
+        {
+          context:
+            "Cognito confidential app clients require a SECRET_HASH parameter in several auth calls (sign_up, confirm_sign_up, authenticate, refresh_token). Missing it on any call returns a cryptic error that is not obvious from the AWS docs.",
+          whatYouDid:
+            "Audited every Cognito SDK call site, added SECRET_HASH derived from HMAC-SHA256(username + client_id, client_secret) consistently, and centralised the computation so future calls cannot skip it.",
+          impact:
+            "Auth flows stable in production with no SECRET_HASH errors. New developers can't accidentally omit it — the helper enforces it.",
+        },
+        {
+          context:
             "Business rules needed identifiers scoped by activity: global mapping let the same modality leak across unrelated activities.",
           whatYouDid:
             "Moved to scope-aware mapping, pushed critical uniqueness into the database with conditional constraints where legacy data still had to live, and used additive migration plus explicit legacy fallback order.",
           impact:
-            "Fewer cross-activity data bugs and a defensible story under concurrency—validators are not enough if the DB cannot enforce the rule.",
+            "Fewer cross-activity data bugs and a defensible story under concurrency — validators are not enough if the DB cannot enforce the rule.",
         },
         {
           context:
-            "Tags, replace-style assignment APIs, and an external panel that bills per line: technically valid payloads still broke commercial semantics.",
+            "The backoffice export used CSV. Booking data entered by users contained strings starting with =, +, or - that Excel auto-executed as formulas — a classic injection vector with real commercial data at risk.",
           whatYouDid:
-            "Modeled tags as a real M2M, made update semantics explicit (replace vs incremental), kept backward compatibility during rollout, and used decision-oriented logging plus payload audit when the integration mispriced.",
+            "Replaced the CSV endpoint with a JSON response. Removed the sanitisation problem entirely by eliminating the format, not by patching it.",
           impact:
-            "Catalog and admin flows got clearer contracts; we caught a billing-side semantic mismatch quickly and corrected the mapping instead of debating HTTP 200 forever.",
+            "Injection vector gone. Operations staff get structured data with full fidelity; no formula execution risk regardless of input content.",
         },
       ],
     },

@@ -84,6 +84,30 @@ const es = {
       items: [
         {
           context:
+            "Dos requests concurrentes para el mismo slot leían ‘disponible’ antes de que ninguno hiciera commit — una clásica carrera de read-modify-write que generaba doble reserva en actividades de alta demanda.",
+          whatYouDid:
+            "Agregué SELECT FOR UPDATE sobre la fila de disponibilidad dentro de la misma transacción que crea la reserva. El segundo request queda bloqueado hasta que el primero hace commit o rollback, luego ve el estado actualizado y falla o tiene éxito de forma limpia.",
+          impact:
+            "Doble reserva eliminada en la frontera de la DB. Sin locks a nivel aplicación, sin lógica de reintento — la base de datos es el punto de serialización y el comportamiento es determinista.",
+        },
+        {
+          context:
+            "El flujo de pagos dependía del redirect del proveedor para marcar una reserva como ‘pagada’. Con tráfico real, cierres de pestaña, reintentos del proveedor y caídas de red hacían que el callback llegara tarde, dos veces o nunca.",
+          whatYouDid:
+            "Moví el estado ‘reserva pagada’ para que solo lo fijara el handler del webhook — nunca el redirect. Validación HMAC en cada payload entrante; procesamiento idempotente por event_id dentro de una única transacción de DB.",
+          impact:
+            "El estado de pago quedó consistente sin importar el comportamiento del cliente. Los webhooks duplicados son no-ops seguros. El redirect ahora es solo UI; nunca maneja estado.",
+        },
+        {
+          context:
+            "Los clientes de app confidenciales de Cognito exigen el parámetro SECRET_HASH en varias llamadas de auth (sign_up, confirm_sign_up, authenticate, refresh_token). Omitirlo en cualquier llamada devuelve un error críptico que la documentación de AWS no hace obvio.",
+          whatYouDid:
+            "Audité todos los call sites del SDK de Cognito, agregué SECRET_HASH derivado de HMAC-SHA256(username + client_id, client_secret) de forma consistente y centralicé el cálculo para que futuras llamadas no puedan omitirlo.",
+          impact:
+            "Flujos de auth estables en producción sin errores de SECRET_HASH. Los nuevos desarrolladores no pueden omitirlo accidentalmente — el helper lo impone.",
+        },
+        {
+          context:
             "El negocio pedía identificadores con contexto por actividad: un mapeo global hacía que una modalidad ‘contagiara’ otras actividades.",
           whatYouDid:
             "Pasamos a mapeo con scope, subimos unicidad crítica a la base con constraints condicionales mientras convivía data legacy, migración aditiva y orden explícito de fallback.",
@@ -92,11 +116,11 @@ const es = {
         },
         {
           context:
-            "Tags, APIs con semántica de reemplazo y un panel externo que cobra por línea: payloads válidos en HTTP igual rompían la lógica comercial.",
+            "El backoffice exportaba en CSV. Datos de reservas ingresados por usuarios contenían strings que empezaban con =, + o - que Excel ejecutaba automáticamente como fórmulas — un vector de inyección clásico con datos comerciales reales en riesgo.",
           whatYouDid:
-            "Modelamos tags en M2M real, dejamos claro replace vs incremental, mantuvimos compatibilidad en la transición y usamos logs de decisión + auditoría de payload cuando el externo facturaba mal.",
+            "Reemplacé el endpoint CSV por una respuesta JSON. Eliminé el problema de sanitización por completo sacando el formato, no parcheándolo.",
           impact:
-            "Contratos más claros para el producto; aislamos un desvío semántico del proveedor y corregimos el mapeo en lugar de quedarnos con el 200.",
+            "Vector de inyección eliminado. El equipo de operaciones recibe datos estructurados con fidelidad completa; sin riesgo de ejecución de fórmulas sin importar el contenido ingresado.",
         },
       ],
     },
