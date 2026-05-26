@@ -175,15 +175,17 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
             <ContactForm source="home" />
           </CollapsibleSection>
 
-          {/* ── arcade zone — snake game + future extras ── */}
-          <div className="border-t border-sega-cyan/20 bg-sega-bg-dark/40">
-            <div className="max-w-4xl mx-auto px-6 py-10 flex flex-col items-center gap-4">
-              <p className="font-pixel text-[8px] text-sega-cyan/30 tracking-[0.3em] uppercase">
-                {lang === "es" ? "// zona arcade" : "// arcade zone"}
-              </p>
-              <MiniSnakeGame />
+          {/* ── arcade zone — solo visible en home ── */}
+          {expandedSection === "home" && (
+            <div className="border-t border-sega-cyan/20 bg-sega-bg-dark/40">
+              <div className="max-w-4xl mx-auto px-6 py-10 flex flex-col items-center gap-4">
+                <p className="font-pixel text-[8px] text-sega-cyan/30 tracking-[0.3em] uppercase">
+                  {lang === "es" ? "// zona arcade" : "// arcade zone"}
+                </p>
+                <MiniSnakeGame />
+              </div>
             </div>
-          </div>
+          )}
         </main>
       </div>
       <footer className="border-t border-sega-cyan/50 flex flex-none font-pixel text-[10px] text-sega-muted min-h-[7.5rem]">
