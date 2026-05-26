@@ -97,7 +97,7 @@ export default function StackTags({
 
       {itemsComplementary.length > 0 && (
         <>
-          <SectionDivider label={lang === "es" ? "Infraestructura & DevOps" : "Infrastructure & DevOps"} />
+          <SectionDivider label={lang === "es" ? "Conocimiento funcional" : "Working knowledge"} />
           <TagList items={itemsComplementary} dim />
         </>
       )}
