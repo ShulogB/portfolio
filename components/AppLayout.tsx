@@ -142,6 +142,7 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
             title={ui.sections.productionProjects}
             isExpanded={expandedSection === "projects"}
             onHeaderClick={() => handleSectionClick("projects")}
+            centered
           >
             <CaseStudiesPanel selectedSlug={selectedCaseStudySlug} onSelect={handleCaseStudyClick} />
           </CollapsibleSection>
@@ -171,6 +172,7 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
             title={ui.sections.contact}
             isExpanded={expandedSection === "contact"}
             onHeaderClick={() => handleSectionClick("contact")}
+            centered
           >
             <ContactForm source="home" />
           </CollapsibleSection>
