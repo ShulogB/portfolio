@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import Button from "./Button";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function ResumeSection() {
@@ -31,13 +30,20 @@ export default function ResumeSection() {
     return () => document.removeEventListener("keydown", handler);
   }, [open]);
 
+  const btnClass =
+    "inline-flex items-center justify-center px-4 py-2.5 text-xs font-pixel transition-all duration-200 border border-sega-cyan/40 text-sega-white hover:border-sega-cyan/70 hover:bg-sega-cyan/8 hover:text-sega-cyan";
+
   return (
     <section className="border-b-2 border-sega-cyan/40">
       <div className="max-w-4xl mx-auto px-6 py-6 flex justify-center">
         <div className="relative" ref={popupRef}>
-          <Button variant="secondary" onClick={() => setOpen((v) => !v)}>
+          <button
+            type="button"
+            className={btnClass}
+            onClick={() => setOpen((v) => !v)}
+          >
             {content.ui.hero.downloadResume}
-          </Button>
+          </button>
 
           {open && (
             <div className="absolute left-1/2 -translate-x-1/2 mt-2 z-50 border border-sega-cyan/40 bg-sega-bg-dark shadow-lg shadow-black/60 min-w-[220px]">
