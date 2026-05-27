@@ -13,6 +13,8 @@ import StackTags from "./StackTags";
 import ContactForm from "./ContactForm";
 import HomeCarousel from "./HomeCarousel";
 import MiniSnakeGame from "./MiniSnakeGame";
+import MiniPongGame from "./MiniPongGame";
+import TypingGame from "./TypingGame";
 import { ADMIN_LOGIN_URL } from "@/lib/api";
 import { GITHUB_URL, LINKEDIN_URL } from "@/lib/site";
 import type { CaseStudyForCarousel } from "@/lib/caseStudyApi";
@@ -180,11 +182,15 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
           {/* ── arcade zone — solo visible en home ── */}
           {expandedSection === "home" && (
             <div className="border-t border-sega-cyan/20 bg-sega-bg-dark/40">
-              <div className="max-w-4xl mx-auto px-6 py-10 flex flex-col items-center gap-4">
+              <div className="max-w-7xl mx-auto px-6 py-10 flex flex-col items-center gap-6">
                 <p className="font-pixel text-[8px] text-sega-cyan/30 tracking-[0.3em] uppercase">
                   {lang === "es" ? "// zona arcade" : "// arcade zone"}
                 </p>
-                <MiniSnakeGame />
+                <div className="flex flex-wrap gap-6 justify-center">
+                  <MiniSnakeGame />
+                  <MiniPongGame />
+                  <TypingGame />
+                </div>
               </div>
             </div>
           )}
