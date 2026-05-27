@@ -305,7 +305,7 @@ export default function MiniPongGame({ isActive = true, onActivate }: MiniPongGa
         )}
 
         {/* paused overlay */}
-        {phase === "paused" && (
+        {phase === "paused" && isActive && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-sega-bg/70">
             <p className="text-[11px] text-sega-cyan tracking-[0.3em]">{es ? "EN PAUSA" : "PAUSED"}</p>
             <div className="flex gap-3 mt-2">
@@ -339,7 +339,7 @@ export default function MiniPongGame({ isActive = true, onActivate }: MiniPongGa
         <span className="text-[7px] text-sega-cyan/18 tracking-wider">
           {es ? "w/s o flechas · primero en 7 gana" : "w/s or arrows · first to 7 wins"}
         </span>
-        {(isPlaying || isPaused) && (
+        {isActive && (isPlaying || isPaused) && (
           <button type="button"
             onClick={(e) => { e.stopPropagation(); isPaused ? resumeGame() : pauseGame(); }}
             className="text-[8px] border border-sega-cyan/25 text-sega-cyan/45 hover:text-sega-cyan/80 hover:border-sega-cyan/55 px-2 py-1 transition-colors ml-4 shrink-0">

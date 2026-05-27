@@ -249,7 +249,7 @@ export default function TypingGame({ isActive = true, onActivate }: TypingGamePr
           </div>
         )}
 
-        {phase === "paused" && (
+        {phase === "paused" && isActive && (
           <div className="flex-1 flex flex-col items-center justify-center gap-4 px-6">
             <p className="text-[11px] text-sega-cyan tracking-[0.3em]">{es ? "EN PAUSA" : "PAUSED"}</p>
             <div className="flex gap-3">
@@ -333,7 +333,7 @@ export default function TypingGame({ isActive = true, onActivate }: TypingGamePr
         <span className="text-[7px] text-sega-cyan/18 tracking-wider">
           {es ? "escribe la palabra · ESC pausa" : "type the word · ESC pause"}
         </span>
-        {(isPlaying || isPaused) && (
+        {isActive && (isPlaying || isPaused) && (
           <button type="button"
             onClick={() => isPaused ? resumeGame() : pauseGame()}
             className="text-[8px] border border-sega-cyan/25 text-sega-cyan/45 hover:text-sega-cyan/80 hover:border-sega-cyan/55 px-2 py-1 transition-colors ml-4 shrink-0">

@@ -328,7 +328,7 @@ export default function MiniSnakeGame({ isActive = true, onActivate }: MiniSnake
         )}
 
         {/* paused overlay */}
-        {phase === "paused" && (
+        {phase === "paused" && isActive && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-sega-bg/70">
             <p className="text-[11px] text-sega-cyan tracking-[0.3em]">{L.paused}</p>
             <p className="text-[8px] text-sega-cyan/50 tracking-widest">{L.resume}</p>
@@ -372,7 +372,7 @@ export default function MiniSnakeGame({ isActive = true, onActivate }: MiniSnake
       {/* bottom bar */}
       <div className="flex items-center justify-between px-3 py-2 border-t border-sega-cyan/10">
         <span className="text-[7px] text-sega-cyan/18 tracking-wider">{L.hint}</span>
-        {(isPlaying || isPaused) && (
+        {isActive && (isPlaying || isPaused) && (
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); isPaused ? resumeGame() : pauseGame(); }}
