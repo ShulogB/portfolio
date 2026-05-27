@@ -18,7 +18,9 @@ const LIVES_MAX = 3;
 type Phase = "idle" | "playing" | "paused" | "over";
 
 // ─── component ───────────────────────────────────────────────────────────────
-export default function TypingGame() {
+type TypingGameProps = { isActive?: boolean; onActivate?: () => void };
+
+export default function TypingGame({ isActive = true, onActivate }: TypingGameProps) {
   const { lang } = useLanguage();
   const es = lang === "es";
 
@@ -162,17 +164,10 @@ export default function TypingGame() {
     }
   }, [phase, word, pickWord, startTimer]);
 
-  // ── keyboard ─────────────────────────────────────────────────────────────
+  // Auto-pause when another game becomes active
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape" || e.key === "p" || e.key === "P") {
-        if (phase === "playing") { pauseGame(); return; }
-        if (phase === "paused")  { resumeGame(); return; }
-      }
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [phase, pauseGame, resumeGame]);
+    if (!isActive && phase === "playing") pauseGame();
+  }, [isActive, phase, pauseGame]);
 
   // Progress bar color
   const barColor = progress > 0.5 ? "#00dcff" : progress > 0.25 ? "#ffe066" : "#ff6b7a";
@@ -190,8 +185,9 @@ export default function TypingGame() {
 
   return (
     <div
-      className="inline-flex flex-col border border-sega-cyan/30 bg-sega-bg-dark select-none hover:border-sega-cyan/45 transition-colors duration-200"
+      className={`inline-flex flex-col border bg-sega-bg-dark select-none transition-colors duration-200 ${isActive ? "border-sega-cyan/50" : "border-sega-cyan/20 hover:border-sega-cyan/35 cursor-pointer"}`}
       style={{ fontFamily: "var(--font-pixel)", width: 320 }}
+      onClick={() => { if (!isActive) onActivate?.(); }}
       aria-label="Typing mini-game"
     >
       {/* title bar */}
@@ -211,7 +207,14 @@ export default function TypingGame() {
       </div>
 
       {/* game area */}
-      <div className="flex flex-col flex-1" style={{ height: 240 }}>
+      <div className="flex flex-col flex-1 relative" style={{ height: 240 }}>
+        {/* inactive overlay */}
+        {!isActive && (
+          <div className="absolute inset-0 bg-sega-bg-dark/65 flex items-center justify-center z-20 pointer-events-none">
+            <p className="text-[8px] text-sega-cyan/45 tracking-[0.25em] animate-pulse">[ CLICK ]</p>
+          </div>
+        )}
+
         {phase === "idle" && (
           <div className="flex-1 flex flex-col items-center justify-center gap-4 px-6">
             <p className="text-[9px] text-sega-cyan/50 text-center leading-relaxed tracking-wide">
@@ -305,6 +308,13 @@ export default function TypingGame() {
               value={typed}
               onChange={handleInput}
               onBlur={() => { if (phase === "playing") inputRef.current?.focus(); }}
+              onKeyDown={(e) => {
+                if (e.key === " " || e.key === "Escape") {
+                  e.preventDefault();
+                  if (phase === "playing") pauseGame();
+                  else if (phase === "paused") resumeGame();
+                }
+              }}
               className="sr-only"
               aria-label="Type the word"
               autoComplete="off"

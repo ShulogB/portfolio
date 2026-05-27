@@ -43,7 +43,9 @@ function makeState() {
 }
 
 // ─── component ───────────────────────────────────────────────────────────────
-export default function MiniSnakeGame() {
+type MiniSnakeGameProps = { isActive?: boolean; onActivate?: () => void };
+
+export default function MiniSnakeGame({ isActive = true, onActivate }: MiniSnakeGameProps) {
   const { lang } = useLanguage();
   const canvasRef   = useRef<HTMLCanvasElement>(null);
   const stateRef    = useRef(makeState());
@@ -199,7 +201,7 @@ export default function MiniSnakeGame() {
                         "w","a","s","d","W","A","S","D"];
 
     const onKey = (e: KeyboardEvent) => {
-      // Don't steal keys from the typing game's input
+      if (!isActive) return;
       if (document.activeElement?.tagName === "INPUT" || document.activeElement?.tagName === "TEXTAREA") return;
       if (e.key === "Escape") {
         if (phase === "playing") { e.preventDefault(); pauseGame(); return; }
@@ -230,7 +232,12 @@ export default function MiniSnakeGame() {
 
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [phase, startGame, pauseGame, resumeGame]);
+  }, [phase, isActive, startGame, pauseGame, resumeGame]);
+
+  // Auto-pause when another game becomes active
+  useEffect(() => {
+    if (!isActive && phase === "playing") pauseGame();
+  }, [isActive, phase, pauseGame]);
 
   // ── touch ─────────────────────────────────────────────────────────────────
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -269,10 +276,11 @@ export default function MiniSnakeGame() {
 
   return (
     <div
-      className="inline-block border border-sega-cyan/30 bg-sega-bg-dark select-none hover:border-sega-cyan/45 transition-colors duration-200"
+      className={`inline-block border bg-sega-bg-dark select-none transition-colors duration-200 ${isActive ? "border-sega-cyan/50" : "border-sega-cyan/20 hover:border-sega-cyan/35 cursor-pointer"}`}
       style={{ fontFamily: "var(--font-pixel)" }}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
+      onClick={() => { if (!isActive) onActivate?.(); }}
       aria-label="Snake mini-game"
     >
       {/* title bar */}
@@ -298,11 +306,19 @@ export default function MiniSnakeGame() {
           width={W}
           height={H}
           onClick={() => {
+            if (!isActive) return;
             if (phase === "idle" || phase === "dead") startGame();
             else if (phase === "paused") resumeGame();
           }}
           className="block cursor-pointer"
         />
+
+        {/* inactive overlay */}
+        {!isActive && (
+          <div className="absolute inset-0 bg-sega-bg-dark/65 flex items-center justify-center z-20 pointer-events-none">
+            <p className="text-[8px] text-sega-cyan/45 tracking-[0.25em] animate-pulse">[ CLICK ]</p>
+          </div>
+        )}
 
         {/* idle overlay */}
         {phase === "idle" && (

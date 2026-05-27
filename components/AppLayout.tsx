@@ -59,6 +59,7 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
   const [expandedSection, setExpandedSection] = useState<SectionId>("home");
   const [selectedCaseStudySlug, setSelectedCaseStudySlug] = useState<string>(DEFAULT_PROJECT);
   const [hydrated, setHydrated] = useState(false);
+  const [activeGame, setActiveGame] = useState<"snake" | "pong" | "typing" | null>(null);
 
   useEffect(() => {
     setHydrated(true);
@@ -187,9 +188,9 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
                   {lang === "es" ? "// zona arcade" : "// arcade zone"}
                 </p>
                 <div className="flex flex-wrap gap-6 justify-center">
-                  <MiniSnakeGame />
-                  <MiniPongGame />
-                  <TypingGame />
+                  <MiniSnakeGame isActive={activeGame === "snake"} onActivate={() => setActiveGame("snake")} />
+                  <MiniPongGame isActive={activeGame === "pong"} onActivate={() => setActiveGame("pong")} />
+                  <TypingGame isActive={activeGame === "typing"} onActivate={() => setActiveGame("typing")} />
                 </div>
               </div>
             </div>

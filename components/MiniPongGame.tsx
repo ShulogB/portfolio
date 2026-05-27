@@ -39,7 +39,9 @@ function makeState(): State {
 }
 
 // ─── component ───────────────────────────────────────────────────────────────
-export default function MiniPongGame() {
+type MiniPongGameProps = { isActive?: boolean; onActivate?: () => void };
+
+export default function MiniPongGame({ isActive = true, onActivate }: MiniPongGameProps) {
   const { lang } = useLanguage();
   const canvasRef  = useRef<HTMLCanvasElement>(null);
   const stateRef   = useRef<State>(makeState());
@@ -216,7 +218,7 @@ export default function MiniPongGame() {
   // ── keyboard ──────────────────────────────────────────────────────────────
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      // Don't steal keys from the typing game's input
+      if (!isActive) return;
       if (document.activeElement?.tagName === "INPUT" || document.activeElement?.tagName === "TEXTAREA") return;
       keysRef.current.add(e.key);
       if (["ArrowUp","ArrowDown","w","s","W","S"," "].includes(e.key)) e.preventDefault();
@@ -229,21 +231,28 @@ export default function MiniPongGame() {
       if ((e.key === "Escape" || e.key === "p" || e.key === "P") && phase === "paused")  { resumeGame(); return; }
     };
     const up = (e: KeyboardEvent) => {
+      if (!isActive) return;
       if (document.activeElement?.tagName === "INPUT" || document.activeElement?.tagName === "TEXTAREA") return;
       keysRef.current.delete(e.key);
     };
     window.addEventListener("keydown", down);
     window.addEventListener("keyup",   up);
     return () => { window.removeEventListener("keydown", down); window.removeEventListener("keyup", up); };
-  }, [phase, startGame, pauseGame, resumeGame]);
+  }, [phase, isActive, startGame, pauseGame, resumeGame]);
+
+  // Auto-pause when another game becomes active
+  useEffect(() => {
+    if (!isActive && phase === "playing") pauseGame();
+  }, [isActive, phase, pauseGame]);
 
   const isPaused  = phase === "paused";
   const isPlaying = phase === "playing";
 
   return (
     <div
-      className="inline-block border border-sega-cyan/30 bg-sega-bg-dark select-none hover:border-sega-cyan/45 transition-colors duration-200"
+      className={`inline-block border bg-sega-bg-dark select-none transition-colors duration-200 ${isActive ? "border-sega-cyan/50" : "border-sega-cyan/20 hover:border-sega-cyan/35 cursor-pointer"}`}
       style={{ fontFamily: "var(--font-pixel)" }}
+      onClick={() => { if (!isActive) onActivate?.(); }}
       aria-label="Pong mini-game"
     >
       {/* title bar */}
@@ -266,11 +275,19 @@ export default function MiniPongGame() {
           width={W}
           height={H}
           onClick={() => {
+            if (!isActive) return;
             if (phase === "idle" || phase === "over") startGame();
             else if (phase === "paused") resumeGame();
           }}
           className="block cursor-pointer"
         />
+
+        {/* inactive overlay */}
+        {!isActive && (
+          <div className="absolute inset-0 bg-sega-bg-dark/65 flex items-center justify-center z-20 pointer-events-none">
+            <p className="text-[8px] text-sega-cyan/45 tracking-[0.25em] animate-pulse">[ CLICK ]</p>
+          </div>
+        )}
 
         {/* idle overlay */}
         {phase === "idle" && (
