@@ -216,6 +216,8 @@ export default function MiniPongGame() {
   // ── keyboard ──────────────────────────────────────────────────────────────
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
+      // Don't steal keys from the typing game's input
+      if (document.activeElement?.tagName === "INPUT" || document.activeElement?.tagName === "TEXTAREA") return;
       keysRef.current.add(e.key);
       if (["ArrowUp","ArrowDown","w","s","W","S"," "].includes(e.key)) e.preventDefault();
       if (e.key === " " || e.key === "Enter") {
@@ -226,7 +228,10 @@ export default function MiniPongGame() {
       if ((e.key === "Escape" || e.key === "p" || e.key === "P") && phase === "playing") { pauseGame(); return; }
       if ((e.key === "Escape" || e.key === "p" || e.key === "P") && phase === "paused")  { resumeGame(); return; }
     };
-    const up = (e: KeyboardEvent) => keysRef.current.delete(e.key);
+    const up = (e: KeyboardEvent) => {
+      if (document.activeElement?.tagName === "INPUT" || document.activeElement?.tagName === "TEXTAREA") return;
+      keysRef.current.delete(e.key);
+    };
     window.addEventListener("keydown", down);
     window.addEventListener("keyup",   up);
     return () => { window.removeEventListener("keydown", down); window.removeEventListener("keyup", up); };

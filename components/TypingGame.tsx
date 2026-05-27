@@ -191,7 +191,7 @@ export default function TypingGame() {
   return (
     <div
       className="inline-flex flex-col border border-sega-cyan/30 bg-sega-bg-dark select-none hover:border-sega-cyan/45 transition-colors duration-200"
-      style={{ fontFamily: "var(--font-pixel)", width: 300 }}
+      style={{ fontFamily: "var(--font-pixel)", width: 320 }}
       aria-label="Typing mini-game"
     >
       {/* title bar */}

@@ -4,13 +4,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 
 // ─── constants ──────────────────────────────────────────────────────────────
-const COLS = 32;
-const ROWS = 26;
-const CELL = 14; // px per cell
+const COLS = 20;
+const ROWS = 15;
+const CELL = 16; // px per cell
 const TICK_MS = 120;
 
-const W = COLS * CELL; // 448
-const H = ROWS * CELL; // 364
+const W = COLS * CELL; // 320
+const H = ROWS * CELL; // 240
 
 // Colors
 const C_BG    = "#060b14";
@@ -38,7 +38,7 @@ function randomFood(snake: Point[]): Point {
 }
 
 function makeState() {
-  const snake: Point[] = [{ x: 16, y: 13 }, { x: 15, y: 13 }, { x: 14, y: 13 }];
+  const snake: Point[] = [{ x: 10, y: 7 }, { x: 9, y: 7 }, { x: 8, y: 7 }];
   return { snake, dir: "RIGHT" as Dir, nextDir: "RIGHT" as Dir, food: randomFood(snake), score: 0, alive: true };
 }
 
@@ -199,6 +199,8 @@ export default function MiniSnakeGame() {
                         "w","a","s","d","W","A","S","D"];
 
     const onKey = (e: KeyboardEvent) => {
+      // Don't steal keys from the typing game's input
+      if (document.activeElement?.tagName === "INPUT" || document.activeElement?.tagName === "TEXTAREA") return;
       if (e.key === "Escape") {
         if (phase === "playing") { e.preventDefault(); pauseGame(); return; }
         if (phase === "paused")  { e.preventDefault(); resumeGame(); return; }
