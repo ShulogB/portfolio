@@ -300,29 +300,31 @@ export default function TypingGame({ isActive = true, onActivate }: TypingGamePr
                 />
               </div>
             </div>
-
-            {/* input (invisible but focused) */}
-            <input
-              ref={inputRef}
-              type="text"
-              value={typed}
-              onChange={handleInput}
-              onBlur={() => { if (phase === "playing") inputRef.current?.focus(); }}
-              onKeyDown={(e) => {
-                if (e.key === " " || e.key === "Escape") {
-                  e.preventDefault();
-                  if (phase === "playing") pauseGame();
-                  else if (phase === "paused") resumeGame();
-                }
-              }}
-              className="sr-only"
-              aria-label="Type the word"
-              autoComplete="off"
-              autoCorrect="off"
-              autoCapitalize="off"
-              spellCheck={false}
-            />
           </div>
+        )}
+
+        {/* input — mounted whenever playing or paused so Escape/Space can always be caught */}
+        {(isPlaying || isPaused) && (
+          <input
+            ref={inputRef}
+            type="text"
+            value={typed}
+            onChange={handleInput}
+            onBlur={() => { if (phase === "playing") inputRef.current?.focus(); }}
+            onKeyDown={(e) => {
+              if (e.key === " " || e.key === "Escape") {
+                e.preventDefault();
+                if (phase === "playing") pauseGame();
+                else if (phase === "paused") resumeGame();
+              }
+            }}
+            className="sr-only"
+            aria-label="Type the word"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
+          />
         )}
       </div>
 
