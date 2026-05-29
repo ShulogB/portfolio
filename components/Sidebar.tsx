@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useLanguage } from "@/context/LanguageContext";
 
 const CASE_STUDY_LABELS: Record<string, string> = {
   "patagonia-dreams": "Patagonia Dreams",
@@ -68,10 +69,11 @@ export default function Sidebar({
   onCaseStudyClick,
 }: SidebarProps) {
   const isProjectsExpanded = expandedSection === "projects";
+  const { lang, setLang } = useLanguage();
 
   return (
     <aside
-      className="fixed left-0 top-0 z-[100] h-full w-[240px] border-r border-sega-cyan/50 bg-sega-bg-dark flex flex-col shadow-sega-glow pointer-events-auto"
+      className="hidden md:flex fixed left-0 top-0 z-[100] h-full w-[240px] border-r border-sega-cyan/50 bg-sega-bg-dark flex-col shadow-sega-glow pointer-events-auto"
       aria-label="Navigation"
     >
       <div className="shrink-0 py-6 px-4 border-b border-sega-cyan/50">
@@ -182,6 +184,35 @@ export default function Sidebar({
           </li>
         </ul>
       </nav>
+
+      {/* Language toggle at bottom of sidebar */}
+      <div className="shrink-0 border-t border-sega-cyan/20 px-4 py-3 flex items-center gap-3">
+        <span className="font-pixel text-[8px] text-sega-muted/60 tracking-wider">LANG</span>
+        <div className="flex gap-2 ml-auto">
+          <button
+            type="button"
+            onClick={() => setLang("en")}
+            className={`font-pixel text-[9px] px-2 py-1 border transition-colors ${
+              lang === "en"
+                ? "border-sega-yellow/60 text-sega-yellow bg-sega-yellow/8"
+                : "border-transparent text-sega-muted hover:text-sega-cyan"
+            }`}
+          >
+            EN
+          </button>
+          <button
+            type="button"
+            onClick={() => setLang("es")}
+            className={`font-pixel text-[9px] px-2 py-1 border transition-colors ${
+              lang === "es"
+                ? "border-sega-yellow/60 text-sega-yellow bg-sega-yellow/8"
+                : "border-transparent text-sega-muted hover:text-sega-cyan"
+            }`}
+          >
+            ES
+          </button>
+        </div>
+      </div>
     </aside>
   );
 }

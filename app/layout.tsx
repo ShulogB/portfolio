@@ -22,34 +22,45 @@ const pressStart2P = Press_Start_2P({
   display: "swap",
 });
 
-const siteTitle = "Senior Backend Engineer – Distributed Systems, Payments, Identity";
+const siteTitle = "Giuliano Bentevenga – Backend Engineer";
 const siteDescription =
-  "Backend engineer focused on distributed systems and production systems: payments, identity gateways, transactional integrity, and explicit trust boundaries. Portfolio of case studies and architecture decisions.";
+  "Backend engineer specialized in payments, identity, and distributed systems. Case studies, architecture decisions, and production-grade code.";
 
 const baseUrl =
   typeof process.env.NEXT_PUBLIC_SITE_URL === "string" && process.env.NEXT_PUBLIC_SITE_URL
     ? process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "")
     : "https://example.com";
 
+const ogImageUrl = `${baseUrl}/opengraph-image`;
+
 const defaultMetadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
     default: siteTitle,
-    template: `%s | ${siteTitle}`,
+    template: `%s | Giuliano Bentevenga`,
   },
   description: siteDescription,
   openGraph: {
     type: "website",
     locale: "en_US",
     url: baseUrl,
-    siteName: siteTitle,
+    siteName: "Giuliano Bentevenga",
     title: siteTitle,
     description: siteDescription,
+    images: [
+      {
+        url: ogImageUrl,
+        width: 1200,
+        height: 630,
+        alt: siteTitle,
+      },
+    ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: siteTitle,
     description: siteDescription,
+    images: [ogImageUrl],
   },
   robots: {
     index: true,

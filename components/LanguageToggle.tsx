@@ -20,7 +20,7 @@ export default function LanguageToggle() {
   const hrefEs = langHref("es", pathname, searchParams);
 
   return (
-    <div className="fixed top-4 right-6 z-[110] flex gap-2 font-pixel text-[10px] text-sega-cyan/80 pointer-events-auto select-none">
+    <div className="hidden md:flex fixed top-4 right-6 z-[110] gap-2 font-pixel text-[10px] text-sega-cyan/80 pointer-events-auto select-none">
       <Link
         href={hrefEn}
         onClick={() => setLang("en")}

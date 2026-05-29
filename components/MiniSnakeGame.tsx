@@ -276,7 +276,7 @@ export default function MiniSnakeGame({ isActive = true, onActivate }: MiniSnake
 
   return (
     <div
-      className={`inline-block border bg-sega-bg-dark select-none transition-colors duration-200 ${isActive ? "border-sega-cyan/50" : "border-sega-cyan/20 hover:border-sega-cyan/35 cursor-pointer"}`}
+      className={`inline-block relative border bg-sega-bg-dark select-none transition-colors duration-200 ${isActive ? "border-sega-cyan/50" : "border-sega-cyan/20 hover:border-sega-cyan/35 cursor-pointer"}`}
       style={{ fontFamily: "var(--font-pixel)" }}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
@@ -327,36 +327,6 @@ export default function MiniSnakeGame({ isActive = true, onActivate }: MiniSnake
           </div>
         )}
 
-        {/* paused overlay */}
-        {phase === "paused" && isActive && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-sega-bg/70">
-            <p className="text-[11px] text-sega-cyan tracking-[0.3em]">{L.paused}</p>
-            <p className="text-[8px] text-sega-cyan/50 tracking-widest">{L.resume}</p>
-            <div className="flex gap-3 mt-2">
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); resumeGame(); }}
-                className="text-[8px] border border-sega-cyan/40 text-sega-cyan/70 hover:text-sega-cyan hover:border-sega-cyan/80 px-3 py-1.5 transition-colors"
-              >
-                {es ? "▶ CONTINUAR" : "▶ RESUME"}
-              </button>
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); startGame(); }}
-                className="text-[8px] border border-sega-cyan/20 text-sega-cyan/40 hover:text-sega-cyan/70 hover:border-sega-cyan/50 px-3 py-1.5 transition-colors"
-              >
-                {es ? "↺ REINICIAR" : "↺ RESTART"}
-              </button>
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); exitGame(); }}
-                className="text-[8px] border border-red-500/20 text-red-400/40 hover:text-red-400/70 hover:border-red-500/50 px-3 py-1.5 transition-colors"
-              >
-                {es ? "× SALIR" : "× EXIT"}
-              </button>
-            </div>
-          </div>
-        )}
 
         {/* dead overlay */}
         {phase === "dead" && (
@@ -368,6 +338,28 @@ export default function MiniSnakeGame({ isActive = true, onActivate }: MiniSnake
           </div>
         )}
       </div>
+
+      {/* paused overlay — covers entire card */}
+      {phase === "paused" && isActive && (
+        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-4 bg-sega-bg-dark/92">
+          <p className="text-[11px] text-sega-cyan tracking-[0.3em]">{L.paused}</p>
+          <p className="text-[8px] text-sega-cyan/50 tracking-widest">{L.resume}</p>
+          <div className="flex gap-3 mt-2">
+            <button type="button" onClick={(e) => { e.stopPropagation(); resumeGame(); }}
+              className="text-[8px] border border-sega-cyan/40 text-sega-cyan/70 hover:text-sega-cyan hover:border-sega-cyan/80 px-3 py-1.5 transition-colors">
+              {es ? "▶ CONTINUAR" : "▶ RESUME"}
+            </button>
+            <button type="button" onClick={(e) => { e.stopPropagation(); startGame(); }}
+              className="text-[8px] border border-sega-cyan/20 text-sega-cyan/40 hover:text-sega-cyan/70 hover:border-sega-cyan/50 px-3 py-1.5 transition-colors">
+              {es ? "↺ REINICIAR" : "↺ RESTART"}
+            </button>
+            <button type="button" onClick={(e) => { e.stopPropagation(); exitGame(); }}
+              className="text-[8px] border border-red-500/20 text-red-400/40 hover:text-red-400/70 hover:border-red-500/50 px-3 py-1.5 transition-colors">
+              {es ? "× SALIR" : "× EXIT"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* bottom bar */}
       <div className="flex items-center justify-between px-3 py-2 border-t border-sega-cyan/10">

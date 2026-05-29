@@ -15,6 +15,7 @@ import HomeCarousel from "./HomeCarousel";
 import MiniSnakeGame from "./MiniSnakeGame";
 import MiniPongGame from "./MiniPongGame";
 import TypingGame from "./TypingGame";
+import MobileNav from "./MobileNav";
 import { ADMIN_LOGIN_URL } from "@/lib/api";
 import { GITHUB_URL, LINKEDIN_URL } from "@/lib/site";
 import type { CaseStudyForCarousel } from "@/lib/caseStudyApi";
@@ -33,10 +34,10 @@ const LEGACY_SECTION_MAP: Record<string, SectionId> = {
 };
 
 function parseSection(param: string | null): SectionId {
-  if (!param) return "home";
+  if (!param) return "projects"; // show projects by default
   if (LEGACY_SECTION_MAP[param]) return LEGACY_SECTION_MAP[param];
   if (SECTION_IDS.includes(param as SectionId)) return param as SectionId;
-  return "home";
+  return "projects";
 }
 
 function parseProject(param: string | null): string {
@@ -56,7 +57,7 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
   const pathname = usePathname();
   const mainRef = useRef<HTMLElement>(null);
 
-  const [expandedSection, setExpandedSection] = useState<SectionId>("home");
+  const [expandedSection, setExpandedSection] = useState<SectionId>("projects");
   const [selectedCaseStudySlug, setSelectedCaseStudySlug] = useState<string>(DEFAULT_PROJECT);
   const [hydrated, setHydrated] = useState(false);
   const [activeGame, setActiveGame] = useState<"snake" | "pong" | "typing" | null>(null);
@@ -136,7 +137,7 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
           onSectionClick={handleSectionClick}
           onCaseStudyClick={handleCaseStudyClick}
         />
-        <main ref={mainRef} className="flex-1 min-h-0 ml-[240px] flex flex-col overflow-auto relative z-0">
+        <main ref={mainRef} className="flex-1 min-h-0 ml-0 md:ml-[240px] flex flex-col overflow-auto relative z-0">
           <Hero onViewProjectsClick={() => handleSectionClick("projects")} />
           <HomeCarousel caseStudies={caseStudiesForCarousel} lang={lang} />
           <ResumeSection />
@@ -180,9 +181,9 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
             <ContactForm source="home" />
           </CollapsibleSection>
 
-          {/* ── arcade zone — solo visible en home ── */}
+          {/* ── arcade zone — solo visible en home, solo en desktop ── */}
           {expandedSection === "home" && (
-            <div className="border-t border-sega-cyan/20 bg-sega-bg-dark/40">
+            <div className="hidden md:block border-t border-sega-cyan/20 bg-sega-bg-dark/40">
               <div className="max-w-7xl mx-auto px-6 py-10 flex flex-col items-center gap-6">
                 <p className="font-pixel text-[8px] text-sega-cyan/30 tracking-[0.3em] uppercase">
                   {lang === "es" ? "// zona arcade" : "// arcade zone"}
@@ -197,8 +198,8 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
           )}
         </main>
       </div>
-      <footer className="border-t border-sega-cyan/50 flex flex-none font-pixel text-[10px] text-sega-muted min-h-[7.5rem]">
-        <div className="w-[240px] shrink-0 flex flex-col justify-center gap-2 py-6 px-4 border-r border-sega-cyan/50">
+      <footer className="border-t border-sega-cyan/50 flex flex-none font-pixel text-[10px] text-sega-muted min-h-[7.5rem] mb-14 md:mb-0">
+        <div className="hidden md:flex w-[240px] shrink-0 flex-col justify-center gap-2 py-6 px-4 border-r border-sega-cyan/50">
           <p className="uppercase tracking-wide text-sega-muted leading-relaxed">
             {ui.hero.tagline}
           </p>
@@ -250,6 +251,11 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
           </div>
         </div>
       </footer>
+      <MobileNav
+        expandedSection={expandedSection}
+        selectedCaseStudySlug={selectedCaseStudySlug}
+        onSectionClick={handleSectionClick}
+      />
     </div>
   );
 }
