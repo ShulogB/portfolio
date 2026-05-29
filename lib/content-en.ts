@@ -10,7 +10,7 @@ const en = {
     subtitle:
       "Backend Lead with 4+ years in production. I've built municipal identity systems and transactional booking platforms from scratch, focusing on scalability, security, and reliability that holds up in the real world.",
     location: "Argentina — open to remote",
-    sidebarRole: "Backend Engineer · backend lead in production",
+    sidebarRole: "Backend Engineer · Systems that hold under pressure",
     impactLine:
       "Specialized in payments (Mercado Pago, Stripe, Pix), identity (ARCA, ANSES, RENAPER, Mi Argentina), and third-party integrations (Google, Meta, Amazon SES). I design systems that stay correct under concurrency and scale as the business grows.",
   },

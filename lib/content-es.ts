@@ -72,7 +72,7 @@ const es = {
     subtitle:
       "Backend Lead con +4 años en producción. Construí sistemas de identidad municipal y plataformas de reservas transaccionales desde cero, con foco en escalabilidad, seguridad y contratos que aguantan en producción real.",
     location: "Argentina — abierto a remoto",
-    sidebarRole: "Ingeniero backend senior · liderazgo de backend en producción",
+    sidebarRole: "Ingeniero Backend · Sistemas que aguantan bajo presión",
     impactLine:
       "Especializado en pagos (Mercado Pago, Stripe, Pix), identidad (ARCA, ANSES, RENAPER, Mi Argentina) e integraciones con terceros (Google, Meta, Amazon SES). Diseño sistemas que se mantienen correctos bajo concurrencia y escalan junto con el negocio.",
   },
