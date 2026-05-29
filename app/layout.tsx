@@ -100,7 +100,7 @@ const jsonLdPerson = {
   "@context": "https://schema.org",
   "@type": "Person",
   name: content.en.hero.name,
-  jobTitle: "Senior Backend Engineer",
+  jobTitle: "Backend Engineer",
   description: siteDescription,
   url: baseUrl,
   knowsAbout: [

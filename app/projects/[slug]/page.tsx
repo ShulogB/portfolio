@@ -70,7 +70,7 @@ export async function generateMetadata({
       locale,
       alternateLocale: lang === "es" ? "en_US" : "es_ES",
       type: "article",
-      siteName: "Senior Backend Engineer – Distributed Systems, Payments, Identity",
+      siteName: "Backend Engineer",
     },
     twitter: {
       card: "summary",

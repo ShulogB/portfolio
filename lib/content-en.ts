@@ -10,9 +10,9 @@ const en = {
     subtitle:
       "Backend Lead with 4+ years in production. I've built municipal identity systems and transactional booking platforms from scratch, focusing on scalability, security, and reliability that holds up in the real world.",
     location: "Argentina — open to remote",
-    sidebarRole: "Senior Backend Engineer · backend lead in production",
+    sidebarRole: "Backend Engineer · backend lead in production",
     impactLine:
-      "Specialized in payments (Mercado Pago, Stripe, Pix), identity (AFIP, ANSES, RENAPER, Mi Argentina), and third-party integrations (Google, Meta, Amazon SES). I design systems that stay correct under concurrency and scale as the business grows.",
+      "Specialized in payments (Mercado Pago, Stripe, Pix), identity (ARCA, ANSES, RENAPER, Mi Argentina), and third-party integrations (Google, Meta, Amazon SES). I design systems that stay correct under concurrency and scale as the business grows.",
   },
   /** Short intro above production project cards on the home page. */
   productionProjectsIntro:
@@ -174,7 +174,7 @@ const en = {
     "Booking platform for an operator with 180k+ passengers/year and 7,000+ five-star Google reviews.",
     "~15k logins/month on municipal identity gateway (autentica.bahia.gob.ar); 10+ critical city services centralized, 2 years uninterrupted in production.",
     "p95 webhook-to-DB under 400 ms; 8+ backend services consume gateway tokens.",
-    "Integrations: Mercado Pago · Stripe · Pix · AWS (Cognito, SES, Secrets Manager) · Google (OAuth, My Business, Merchant Center) · Meta · AFIP · ANSES · RENAPER · Mi Argentina.",
+    "Integrations: Mercado Pago · Stripe · Pix · AWS (Cognito, SES, Secrets Manager) · Google (OAuth, My Business, Merchant Center) · Meta · ARCA · ANSES · RENAPER · Mi Argentina.",
   ],
   caseStudies: [
     {
@@ -197,7 +197,7 @@ const en = {
       title: "Municipal Unified Identity Platform",
       tech: "Gateway · tokens · national registry checks",
       preview:
-        "SSO gateway for Bahía Blanca's municipal services: citizens authenticate once; 10+ downstream apps consume issued tokens. Gateway integrates with AFIP, ANSES, RENAPER, and Mi Argentina. Verification is explicit and fail-safe — no token issued when national APIs are down. ~15k logins/month, 2 years uninterrupted in production.",
+        "SSO gateway for Bahía Blanca's municipal services: citizens authenticate once; 10+ downstream apps consume issued tokens. Gateway integrates with ARCA, ANSES, RENAPER, and Mi Argentina. Verification is explicit and fail-safe — no token issued when national APIs are down. ~15k logins/month, 2 years uninterrupted in production.",
       diagramType: "identity" as const,
       adrs: [
         { title: "Gateway as sole issuer of session tokens; legacy systems validate only", href: "#" },
@@ -214,7 +214,7 @@ const en = {
     { scope: "patagoniadreams.com.ar — reservation creation", challenge: "duplicate submissions (double-click, client retries)", decision: "idempotency key per creation request; unique constraint on key in DB", impact: "retries safe; no duplicate reservations." },
     { scope: "patagoniadreams.com.ar — payment and reservation state", challenge: "two states must stay in sync; frontend could not drive status", decision: "single DB transaction on webhook: create/update payment record and set reservation paid", impact: "no \"paid\" without webhook; no split state." },
     { scope: "autentica.bahia.gob.ar — session token lifecycle", challenge: "who issues, who validates; avoid PII in tokens", decision: "gateway sole issuer; tokens carry only claims (sub, roles, exp); RBAC at gateway and at each service", impact: "clear trust boundary; ~15k logins/month; 2 years uninterrupted in production." },
-    { scope: "autentica.bahia.gob.ar — identity verification", challenge: "national APIs (RENAPER, AFIP) down or high latency", decision: "never issue \"verified\" when verification did not succeed; degraded mode + alerting when APIs unavailable", impact: "no false \"verified\"; re-validation on every login." },
+    { scope: "autentica.bahia.gob.ar — identity verification", challenge: "national APIs (RENAPER, ARCA) down or high latency", decision: "never issue \"verified\" when verification did not succeed; degraded mode + alerting when APIs unavailable", impact: "no false \"verified\"; re-validation on every login." },
     { scope: "autentica.bahia.gob.ar — legacy service integration", challenge: "legacy systems must not re-authenticate; single source of identity", decision: "gateway issues signed tokens; services validate signature and apply RBAC only; no direct calls to national APIs from services", impact: "single place for identity; 8+ backend services consume tokens." },
     { scope: "autentica.bahia.gob.ar — authorization and audit", challenge: "role and resource access across services; who did what", decision: "RBAC at gateway (route-level) and at service (resource-level); roles in token claims; DB constraints and audit logging for sensitive actions", impact: "consistent policy; full audit trail for compliance." },
   ] as ExperienceSummaryItem[],

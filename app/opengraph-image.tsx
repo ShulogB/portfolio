@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Giuliano Bentevenga — Senior Backend Engineer";
+export const alt = "Giuliano Bentevenga — Backend Engineer";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -147,7 +147,7 @@ export default async function Image() {
               textShadow: "0 0 12px rgba(255,224,102,0.3)",
             }}
           >
-            &gt; Senior Backend Engineer
+            &gt; Backend Engineer
             <span
               style={{
                 display: "inline-block",

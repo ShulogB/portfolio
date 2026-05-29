@@ -235,7 +235,7 @@ const municipalIdentity: Project = {
   title: "Municipal Unified Identity Platform",
   tech: "Identity • Trust Boundaries • RBAC",
   overview:
-    "Centralized SSO-style authentication gateway for the Municipality of Bahía Blanca (autentica.bahia.gob.ar): citizens authenticate once and access 10+ critical municipal services with a single token. ~15k logins/month, 2 years uninterrupted in production. Identity is validated against national registries — AFIP, ANSES, RENAPER, and Mi Argentina — on every login; the gateway is the sole component that calls those APIs and the sole issuer of session tokens. Legacy systems consume signed tokens and enforce RBAC; they never re-authenticate. No PII in tokens; fail safe when national APIs are unavailable. Audit and RBAC at gateway and service layer.",
+    "Centralized SSO-style authentication gateway for the Municipality of Bahía Blanca (autentica.bahia.gob.ar): citizens authenticate once and access 10+ critical municipal services with a single token. ~15k logins/month, 2 years uninterrupted in production. Identity is validated against national registries — ARCA, ANSES, RENAPER, and Mi Argentina — on every login; the gateway is the sole component that calls those APIs and the sole issuer of session tokens. Legacy systems consume signed tokens and enforce RBAC; they never re-authenticate. No PII in tokens; fail safe when national APIs are unavailable. Audit and RBAC at gateway and service layer.",
   diagramType: "identity",
   adrs: [
     { title: "Gateway as sole issuer of session tokens; legacy systems validate only", href: "#" },
@@ -254,14 +254,14 @@ const municipalIdentity: Project = {
   scaleConstraints: {
     requestVolume: "~45k logins/month; token validation on every request to downstream services.",
     concurrency: "Gateway is single writer for tokens; services are read-only validators. No distributed lock; stateless validation.",
-    externalDependencies: "Mi Argentina, RENAPER, AFIP. Login depends on at least one being available; degraded mode (unverified session or reject) when all are down.",
+    externalDependencies: "Mi Argentina, RENAPER, ARCA. Login depends on at least one being available; degraded mode (unverified session or reject) when all are down.",
     failureModes: "National APIs down or slow → degraded mode or login failure; no \"verified\" issued without verification. Token validation failure → 401; no fallback to legacy auth.",
     dataConsistency: "Session and verification state only in gateway; tokens are signed assertions. Services do not persist identity state; they validate and apply RBAC per request.",
   },
   scaleConstraintsEs: {
     requestVolume: "~45k logins/mes; validación de token en cada request a servicios downstream.",
     concurrency: "El gateway es el único escritor de tokens; los servicios son solo validadores. Sin lock distribuido; validación stateless.",
-    externalDependencies: "Mi Argentina, RENAPER, AFIP. El login depende de que al menos uno esté disponible; modo degradado (sesión no verificada o rechazo) cuando todos están caídos.",
+    externalDependencies: "Mi Argentina, RENAPER, ARCA. El login depende de que al menos uno esté disponible; modo degradado (sesión no verificada o rechazo) cuando todos están caídos.",
     failureModes: "APIs nacionales caídas o lentas → modo degradado o fallo de login; sin 'verificado' emitido sin verificación. Fallo de validación de token → 401; sin fallback a auth legacy.",
     dataConsistency: "Estado de sesión y verificación solo en el gateway; los tokens son aserciones firmadas. Los servicios no persisten estado de identidad; validan y aplican RBAC por request.",
   },
@@ -277,7 +277,7 @@ const municipalIdentity: Project = {
   ],
   whatWouldBreak: [
     "Gateway down: no one logs in; single point of failure for all services.",
-    "RENAPER, AFIP, Mi Argentina all unavailable: only unverified sessions or login failure; no degradation that preserves \"verified\".",
+    "RENAPER, ARCA, Mi Argentina all unavailable: only unverified sessions or login failure; no degradation that preserves \"verified\".",
     "Token signing key compromise: all tokens forgeable until rotation; services must reject old key and all sessions invalidated.",
     "DB holding session/audit state lost: session revocation and audit trail gap; no point-in-time recovery of who had access.",
     "Sudden 10x login spike: national APIs and gateway become bottleneck; external dependencies do not scale with us.",
@@ -285,7 +285,7 @@ const municipalIdentity: Project = {
   ],
   whatWouldBreakEs: [
     "Gateway caído: nadie puede loguearse; único punto de fallo para todos los servicios.",
-    "RENAPER, AFIP, Mi Argentina todos no disponibles: solo sesiones no verificadas o fallo de login; sin degradación que preserve 'verificado'.",
+    "RENAPER, ARCA, Mi Argentina todos no disponibles: solo sesiones no verificadas o fallo de login; sin degradación que preserve 'verificado'.",
     "Compromiso de clave de firma de tokens: todos los tokens son falsificables hasta la rotación; los servicios deben rechazar la clave vieja y todas las sesiones son invalidadas.",
     "DB con estado de sesión/auditoría perdida: brecha en revocación de sesiones y audit trail; sin recuperación point-in-time de quién tuvo acceso.",
     "Spike repentino de logins x10: las APIs nacionales y el gateway se convierten en cuello de botella; las dependencias externas no escalan con nosotros.",
@@ -347,7 +347,7 @@ const municipalIdentity: Project = {
   titleEs: "Plataforma municipal de identidad unificada",
   techEs: "Identidad • Límites de confianza • RBAC",
   overviewEs:
-    "Gateway de autenticación estilo SSO para el Municipio de Bahía Blanca (autentica.bahia.gob.ar): los ciudadanos se autentican una vez y acceden a 10+ servicios municipales críticos con un único token. ~15k logins/mes, 2 años en producción ininterrumpida. La identidad se valida contra registros nacionales — AFIP, ANSES, RENAPER y Mi Argentina — en cada login; el gateway es el único componente que llama esas APIs y el único emisor de tokens de sesión. Sistemas legacy consumen tokens firmados y aplican RBAC; no re-autentican. Sin PII en tokens; fail safe cuando las APIs nacionales no están disponibles. Auditoría y RBAC en gateway y capa de servicio.",
+    "Gateway de autenticación estilo SSO para el Municipio de Bahía Blanca (autentica.bahia.gob.ar): los ciudadanos se autentican una vez y acceden a 10+ servicios municipales críticos con un único token. ~15k logins/mes, 2 años en producción ininterrumpida. La identidad se valida contra registros nacionales — ARCA, ANSES, RENAPER y Mi Argentina — en cada login; el gateway es el único componente que llama esas APIs y el único emisor de tokens de sesión. Sistemas legacy consumen tokens firmados y aplican RBAC; no re-autentican. Sin PII en tokens; fail safe cuando las APIs nacionales no están disponibles. Auditoría y RBAC en gateway y capa de servicio.",
 };
 
 const PAYMENT_ORCHESTRATOR_ASCII = `Client
