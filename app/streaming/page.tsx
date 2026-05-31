@@ -2,24 +2,54 @@
 
 import { useEffect, useRef } from "react";
 
+const TNTLogo = () => (
+  <svg viewBox="0 0 180 80" width="160" height="71" xmlns="http://www.w3.org/2000/svg">
+    <rect width="180" height="80" rx="8" fill="#CC0000"/>
+    <text x="90" y="52" textAnchor="middle" fontFamily="Arial Black, sans-serif"
+      fontWeight="900" fontSize="46" fill="white" letterSpacing="2">TNT</text>
+    <text x="90" y="72" textAnchor="middle" fontFamily="Arial, sans-serif"
+      fontWeight="700" fontSize="14" fill="white" letterSpacing="6">SPORTS</text>
+  </svg>
+);
+
+const ESPNLogo = () => (
+  <svg viewBox="0 0 180 80" width="160" height="71" xmlns="http://www.w3.org/2000/svg">
+    <rect width="180" height="80" rx="8" fill="#1a1a1a"/>
+    <text x="90" y="56" textAnchor="middle" fontFamily="Arial Black, sans-serif"
+      fontWeight="900" fontSize="50" fill="#CC0000" letterSpacing="1">ESPN</text>
+    <text x="90" y="74" textAnchor="middle" fontFamily="Arial, sans-serif"
+      fontWeight="700" fontSize="13" fill="#aaa" letterSpacing="5">PREMIUM</text>
+  </svg>
+);
+
+const BVCLogo = () => (
+  <svg viewBox="0 0 180 80" width="160" height="71" xmlns="http://www.w3.org/2000/svg">
+    <rect width="180" height="80" rx="8" fill="#003087"/>
+    <text x="90" y="54" textAnchor="middle" fontFamily="Arial Black, sans-serif"
+      fontWeight="900" fontSize="50" fill="white" letterSpacing="4">BVC</text>
+    <text x="90" y="73" textAnchor="middle" fontFamily="Arial, sans-serif"
+      fontWeight="600" fontSize="12" fill="#7ab3ff" letterSpacing="5">PLAY</text>
+  </svg>
+);
+
 const SERVICES = [
   {
     name: "TNT Sports",
     url: "https://angulismotv.pages.dev/transmision?c=TNT+Sports&o=0",
-    emoji: "🏆",
-    color: "#FF6B00",
+    Logo: TNTLogo,
+    color: "#CC0000",
   },
   {
     name: "ESPN Premium",
     url: "https://angulismotv.pages.dev/transmision?c=ESPN+Premium&o=0",
-    emoji: "⚡",
+    Logo: ESPNLogo,
     color: "#CC0000",
   },
   {
     name: "BVC Play",
     url: "https://bvcplay.com.ar/#/login",
-    emoji: "🎭",
-    color: "#1A73E8",
+    Logo: BVCLogo,
+    color: "#003087",
   },
 ];
 
@@ -162,19 +192,7 @@ export default function StreamingPage() {
               onMouseEnter={() => setFocus(i)}
               onFocus={() => setFocus(i)}
             >
-              <span style={{ fontSize: "clamp(3rem, 6vw, 5.5rem)", lineHeight: 1 }}>
-                {service.emoji}
-              </span>
-              <span
-                style={{
-                  fontSize: "clamp(1.2rem, 2.5vw, 2rem)",
-                  fontWeight: 600,
-                  letterSpacing: "0.04em",
-                  fontFamily: "system-ui, sans-serif",
-                }}
-              >
-                {service.name}
-              </span>
+              <service.Logo />
               <span
                 className="streaming-accent"
                 style={{
