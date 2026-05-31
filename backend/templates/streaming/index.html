@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Streaming</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --card-bg: #16161f;
+      --card-border: #2a2a3a;
+      --text: #f0f0f5;
+      --text-muted: #888899;
+      --focus-ring: #ffffff;
+      --radius: 20px;
+      --gap: 48px;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      overflow: hidden;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 40px;
+      gap: 56px;
+    }
+
+    h1 {
+      font-size: clamp(1.4rem, 3vw, 2.4rem);
+      font-weight: 300;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .cards {
+      display: flex;
+      flex-direction: row;
+      gap: var(--gap);
+      align-items: center;
+      justify-content: center;
+      flex-wrap: nowrap;
+    }
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      width: clamp(220px, 22vw, 340px);
+      aspect-ratio: 3 / 4;
+      background: var(--card-bg);
+      border: 2px solid var(--card-border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      outline: none;
+      text-decoration: none;
+      color: var(--text);
+      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .card:hover {
+      transform: scale(1.04);
+      border-color: #555;
+    }
+
+    .card.focused {
+      border-color: var(--focus-ring);
+      background: #1e1e2e;
+      transform: scale(1.08);
+      box-shadow: 0 0 0 4px rgba(255,255,255,0.12), 0 20px 60px rgba(0,0,0,0.6);
+    }
+
+    .card-emoji {
+      font-size: clamp(3rem, 6vw, 5.5rem);
+      line-height: 1;
+    }
+
+    .card-name {
+      font-size: clamp(1.2rem, 2.5vw, 2rem);
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-align: center;
+    }
+
+    .card-accent {
+      width: 40px;
+      height: 4px;
+      border-radius: 2px;
+      opacity: 0.7;
+      transition: opacity 0.15s;
+    }
+
+    .card.focused .card-accent { opacity: 1; }
+
+    .hint {
+      font-size: clamp(0.75rem, 1.2vw, 1rem);
+      color: var(--text-muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 700px) {
+      .cards { flex-direction: column; }
+      .card {
+        width: min(80vw, 280px);
+        aspect-ratio: 5 / 3;
+        flex-direction: row;
+        gap: 20px;
+        padding: 0 32px;
+        justify-content: flex-start;
+      }
+      .card-accent { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>¿Qué vemos?</h1>
+
+  <div class="cards" id="cards">
+    {% for service in services %}
+    <a
+      class="card"
+      href="{{ service.url }}"
+      data-index="{{ forloop.counter0 }}"
+      tabindex="0"
+      style="--accent: {{ service.color }};"
+    >
+      <span class="card-emoji">{{ service.emoji }}</span>
+      <span class="card-name">{{ service.name }}</span>
+      <span class="card-accent" style="background: {{ service.color }};"></span>
+    </a>
+    {% endfor %}
+  </div>
+
+  <span class="hint">← → para navegar &nbsp;·&nbsp; Enter para abrir</span>
+
+  <script>
+    const cards = Array.from(document.querySelectorAll('.card'));
+    let focused = 0;
+
+    function setFocus(idx) {
+      cards[focused]?.classList.remove('focused');
+      focused = (idx + cards.length) % cards.length;
+      cards[focused].classList.add('focused');
+      cards[focused].focus();
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        setFocus(focused + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        setFocus(focused - 1);
+      } else if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        window.location.href = cards[focused].href;
+      }
+    });
+
+    // Foco inicial
+    setFocus(0);
+
+    // Soporte touch / mouse: actualizar focused al hacer hover
+    cards.forEach((card, i) => {
+      card.addEventListener('mouseenter', () => setFocus(i));
+      card.addEventListener('focus', () => {
+        cards[focused]?.classList.remove('focused');
+        focused = i;
+        cards[i].classList.add('focused');
+      });
+    });
+  </script>
+
+</body>
+</html>

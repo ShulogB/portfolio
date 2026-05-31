@@ -39,7 +39,10 @@ def _index_with_metrics(request, extra_context=None):
 
 admin.site.index = _index_with_metrics
 
+from core.views import StreamingPageView
+
 urlpatterns = [
+    path("streaming", StreamingPageView.as_view(), name="streaming"),
     path("i18n/", include("django.conf.urls.i18n")),
     path("admin/", admin.site.urls),
     path("api/v1/", include("core.urls")),

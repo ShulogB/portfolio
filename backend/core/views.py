@@ -1,5 +1,7 @@
 import logging
 
+from django.shortcuts import render
+from django.views import View
 from django.conf import settings
 from django.core.mail import send_mail
 from rest_framework import status
@@ -90,3 +92,31 @@ class TrackPageViewView(APIView):
             serializer.save()
             return Response({"detail": "OK"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class StreamingPageView(View):
+    """GET /streaming — página aislada para TV, accesible solo por URL directa."""
+
+    SERVICES = [
+        {
+            "name": "TNT Sports",
+            "url": "https://angulismotv.pages.dev/transmision?c=TNT+Sports&o=0",
+            "emoji": "🏆",
+            "color": "#FF6B00",
+        },
+        {
+            "name": "ESPN Premium",
+            "url": "https://angulismotv.pages.dev/transmision?c=ESPN+Premium&o=0",
+            "emoji": "⚡",
+            "color": "#CC0000",
+        },
+        {
+            "name": "BVC Play",
+            "url": "https://bvcplay.com.ar/#/login",
+            "emoji": "🎭",
+            "color": "#1A73E8",
+        },
+    ]
+
+    def get(self, request):
+        return render(request, "streaming/index.html", {"services": self.SERVICES})
