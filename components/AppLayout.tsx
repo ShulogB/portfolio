@@ -203,27 +203,33 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
           <p className="uppercase tracking-wide text-sega-muted leading-relaxed">
             {ui.hero.tagline}
           </p>
-          <a
-            href={ADMIN_LOGIN_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="border border-sega-cyan/50 bg-sega-cyan/10 py-2 px-3 text-sega-muted text-center hover:bg-sega-cyan/15 hover:text-sega-cyan/90 hover:border-sega-cyan/70 transition-colors w-fit"
-          >
-            {ui.adminLogin}
-          </a>
-        </div>
-        <div className="flex-1 flex flex-col items-center justify-center gap-3 py-6 px-6">
-          <p className="text-sega-muted">
-            {ui.footer}
-            <span className="mx-1.5">·</span>
+          {ui.adminLogin && (
             <a
               href={ADMIN_LOGIN_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="underline hover:text-sega-cyan/90 transition-colors"
+              className="border border-sega-cyan/50 bg-sega-cyan/10 py-2 px-3 text-sega-muted text-center hover:bg-sega-cyan/15 hover:text-sega-cyan/90 hover:border-sega-cyan/70 transition-colors w-fit"
             >
               {ui.adminLogin}
             </a>
+          )}
+        </div>
+        <div className="flex-1 flex flex-col items-center justify-center gap-3 py-6 px-6">
+          <p className="text-sega-muted">
+            {ui.footer}
+            {ui.adminLogin && (
+              <>
+                <span className="mx-1.5">·</span>
+                <a
+                  href={ADMIN_LOGIN_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-sega-cyan/90 transition-colors"
+                >
+                  {ui.adminLogin}
+                </a>
+              </>
+            )}
           </p>
           <div className="flex items-center justify-center gap-3" aria-label="Redes sociales">
             <a

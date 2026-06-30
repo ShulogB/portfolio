@@ -39,7 +39,7 @@ const patagoniaDreams: Project = {
   title: "Transactional Booking & Payment Platform",
   tech: "Payments • Webhooks • Concurrency",
   overview:
-    "Backend for Patagonia Dreams — a tourism operator with 180k+ passengers/year and 7,000+ five-star Google reviews. Built and led the platform from scratch: transactional reservations and payments (Mercado Pago, Stripe, Pix), multi-tenant backoffice, and bidirectional sync with an external activity panel. The core invariant: a reservation is only 'paid' when the webhook confirms it — never based on client state. Webhooks are HMAC-validated and processed idempotently by event_id. Availability is locked pessimistically (SELECT FOR UPDATE) to serialize concurrent bookings on the same slot. Identity via AWS Cognito with JWKS token verification; all critical config from AWS Secrets Manager. Stack: Django, DRF, PostgreSQL, AWS (SES, Cognito, Secrets Manager, ECR/K8s).",
+    "Backend for Patagonia Dreams — a tourism operator with 180k+ passengers/year and 7,000+ five-star Google reviews. Built and led the platform from scratch over 5+ months of active development. Covers B2C e-commerce and B2B partner tiers (oro/platino/diamante with differentiated pricing and deferred payment), transactional reservations and payments (Mercado Pago, Stripe), bidirectional sync with an external activity panel (availability and pricing sourced every 15 min), a WhatsApp sales bot with structured availability and content, Google Business reviews integration, Google Merchant Center feed, abandoned cart recovery via WhatsApp, and a full security audit program (H/M/L nomenclature, 9+ CVEs patched). Core invariant: a reservation is only 'paid' when the webhook confirms it — never based on client state. Webhooks are HMAC-validated and processed idempotently by event_id. Availability is locked pessimistically (SELECT FOR UPDATE) to serialize concurrent bookings. Price is always recomputed server-side — client-sent amounts are never trusted. Dual auth: AWS Cognito (JWKS) for end customers, SimpleJWT for backoffice. Stack: Python 3.12, Django 5.2 LTS, DRF, PostgreSQL, Redis, Docker, GitHub Actions CI/CD; all secrets via AWS Secrets Manager.",
   diagramType: "payments",
   adrs: [
     { title: "Webhooks as single source of truth for payment status — client redirect cannot set 'paid'", href: "#" },
@@ -60,14 +60,14 @@ const patagoniaDreams: Project = {
   scaleConstraints: {
     requestVolume: "Operator with 180k+ passengers/year. Online platform reservations + webhook bursts up to ~50/min on peak.",
     concurrency: "Pessimistic lock on availability row per slot; single writer for payment state. No cross-slot locking.",
-    externalDependencies: "Mercado Pago, Stripe, Pix (payments); external activity Panel (availability, rates, and bidirectional booking sync); AWS Cognito, SES, Secrets Manager; Google (OAuth, My Business, Merchant Center); Meta. Webhooks are async; payment status only via webhook.",
+    externalDependencies: "Mercado Pago, Stripe (payments); external activity Panel (availability, rates, and bidirectional booking sync); AWS Cognito, SES, Secrets Manager; Google (OAuth, My Business, Merchant Center); Meta; WhatsApp (WATI). Webhooks are async; payment status only via webhook.",
     failureModes: "Provider timeout or webhook delay → reservation stays pending until webhook or manual reconciliation. Duplicate webhook → idempotent by event_id. Cognito/Panel down → degraded auth or catalog sync.",
     dataConsistency: "Single DB transaction for reservation + payment on webhook. Reservation \"paid\" only after webhook; frontend cannot set paid. Cognito ↔ Django user sync via get_or_create and ID token verification.",
   },
   scaleConstraintsEs: {
     requestVolume: "Operadora con +180k pasajeros/año. Reservas en plataforma online + bursts de webhooks hasta ~50/min en pico.",
     concurrency: "Lock pesimista en la fila de disponibilidad por slot; único escritor para el estado de pago. Sin locking cruzado entre slots.",
-    externalDependencies: "Mercado Pago, Stripe, Pix (pagos); Panel externo de actividades (disponibilidad, tarifas y sync bidireccional de reservas); AWS Cognito, SES, Secrets Manager; Google (OAuth, My Business, Merchant Center); Meta. Los webhooks son asíncronos; el estado de pago solo llega por webhook.",
+    externalDependencies: "Mercado Pago, Stripe (pagos); Panel externo de actividades (disponibilidad, tarifas y sync bidireccional de reservas); AWS Cognito, SES, Secrets Manager; Google (OAuth, My Business, Merchant Center); Meta; WhatsApp (WATI). Los webhooks son asíncronos; el estado de pago solo llega por webhook.",
     failureModes: "Timeout o demora del proveedor → la reserva queda pendiente hasta el webhook o reconciliación manual. Webhook duplicado → idempotente por event_id. Cognito/Panel caídos → auth degradada o sync de catálogo interrumpida.",
     dataConsistency: "Una transacción DB para reserva + pago en el webhook. Reserva 'pagada' solo tras webhook; el frontend no puede setear pagado. Sync Cognito ↔ Django via get_or_create y verificación de ID token.",
   },
@@ -143,7 +143,7 @@ const patagoniaDreams: Project = {
       paragraphs: [
         "The platform integrates bidirectionally with an external activity panel: availability and pricing are pulled in real time before a booking is confirmed; once confirmed, the reservation is automatically injected back into the panel via API. This keeps both systems consistent without manual intervention and without coupling the reservation flow to panel response time.",
         "Google integrations cover OAuth 2.0 for authentication, My Business API for review management, and Merchant Center for product feed automation. Meta and Watti integrations handle marketing and customer communication automation. Amazon SES manages all transactional emails with parameterized templates and URL validation before dispatch.",
-        "Infrastructure runs on AWS (EC2, ALB, Route 53, ACM/SSL, Cognito, SES, Secrets Manager, ECR/K8s) with Docker across dev, staging, and production. All sensitive configuration is loaded from AWS Secrets Manager at runtime — no secrets in code or repo.",
+        "Infrastructure is containerized with Docker across dev, staging, and production. All sensitive configuration is loaded from AWS Secrets Manager at runtime — no secrets in code or repo.",
         "Development follows a structured flow: feature branches → CI checks (linting, security scans) → PR review → merge to production. No direct pushes to the production branch.",
       ],
     },
@@ -202,7 +202,7 @@ const patagoniaDreams: Project = {
       paragraphs: [
         "La plataforma se integra bidireccionalmente con un panel externo de actividades: disponibilidad y precios se consultan en tiempo real antes de confirmar una reserva; una vez confirmada, la reserva se inyecta automáticamente de vuelta al panel via API. Esto mantiene ambos sistemas consistentes sin intervención manual y sin acoplar el flujo de reservas al tiempo de respuesta del panel.",
         "Las integraciones con Google cubren OAuth 2.0 para autenticación, My Business API para gestión de reseñas y Merchant Center para automatización del feed de productos. Las integraciones con Meta y Watti manejan automatización de marketing y comunicación con clientes. Amazon SES gestiona todos los emails transaccionales con templates parametrizados y validación de URL antes del envío.",
-        "La infraestructura corre en AWS (EC2, ALB, Route 53, ACM/SSL, Cognito, SES, Secrets Manager, ECR/K8s) con Docker en dev, staging y producción. Toda la configuración sensible se carga desde AWS Secrets Manager en runtime — sin secrets en código ni repo.",
+        "La infraestructura está containerizada con Docker en dev, staging y producción. Toda la configuración sensible se carga desde AWS Secrets Manager en runtime — sin secrets en código ni repo.",
         "El desarrollo sigue un flujo estructurado: ramas de feature → CI checks (linting, escaneos de seguridad) → PR review → merge a producción. Sin pushes directos a la rama de producción.",
       ],
     },
@@ -227,7 +227,7 @@ const patagoniaDreams: Project = {
   titleEs: "Plataforma transaccional de reservas y pagos",
   techEs: "Pagos • Webhooks • Concurrencia",
   overviewEs:
-    "Backend para Patagonia Dreams — operadora de turismo con +180k pasajeros/año y 7.000+ reseñas cinco estrellas en Google. Construí y lideré la plataforma desde cero: reservas y pagos transaccionales (Mercado Pago, Stripe, Pix), backoffice multi-tenant y sync bidireccional con un panel externo de actividades. El invariante central: una reserva solo está 'pagada' cuando el webhook lo confirma — nunca basado en el estado del cliente. Los webhooks se validan con HMAC y se procesan de forma idempotente por event_id. La disponibilidad se bloquea de forma pesimista (SELECT FOR UPDATE) para serializar reservas concurrentes en el mismo slot. Identidad via AWS Cognito con verificación de token JWKS; toda la config crítica desde AWS Secrets Manager. Stack: Django, DRF, PostgreSQL, AWS (SES, Cognito, Secrets Manager, ECR/K8s).",
+    "Backend para Patagonia Dreams — operadora de turismo con +180k pasajeros/año y 7.000+ reseñas cinco estrellas en Google. Construí y lideré la plataforma desde cero en 5+ meses de desarrollo activo. Cubre e-commerce B2C y niveles de partner B2B (oro/platino/diamante con precios diferenciados y pago diferido), reservas y pagos transaccionales (Mercado Pago, Stripe), sync bidireccional con un panel externo de actividades (disponibilidad y precios actualizados cada 15 min), un bot de ventas por WhatsApp con disponibilidad y contenido estructurado, integración de reseñas de Google Business, feed de Google Merchant Center, recuperación de carritos abandonados por WhatsApp y un programa de auditoría de seguridad completo (nomenclatura H/M/L, 9+ CVEs parcheados). El invariante central: una reserva solo está 'pagada' cuando el webhook lo confirma — nunca basado en el estado del cliente. Los webhooks se validan con HMAC y se procesan de forma idempotente por event_id. La disponibilidad se bloquea de forma pesimista (SELECT FOR UPDATE) para serializar reservas concurrentes. El precio siempre se recalcula server-side — los montos enviados por el cliente nunca se confían. Auth dual: AWS Cognito (JWKS) para clientes finales, SimpleJWT para el backoffice. Stack: Python 3.12, Django 5.2 LTS, DRF, PostgreSQL, Redis, Docker, GitHub Actions CI/CD; todos los secrets via AWS Secrets Manager.",
 };
 
 const municipalIdentity: Project = {
@@ -235,7 +235,7 @@ const municipalIdentity: Project = {
   title: "Municipal Unified Identity Platform",
   tech: "Identity • Trust Boundaries • RBAC",
   overview:
-    "Centralized SSO-style authentication gateway for the Municipality of Bahía Blanca (autentica.bahia.gob.ar): citizens authenticate once and access 10+ critical municipal services with a single token. ~15k logins/month, 2 years uninterrupted in production. Identity is validated against national registries — ARCA, ANSES, RENAPER, and Mi Argentina — on every login; the gateway is the sole component that calls those APIs and the sole issuer of session tokens. Legacy systems consume signed tokens and enforce RBAC; they never re-authenticate. No PII in tokens; fail safe when national APIs are unavailable. Audit and RBAC at gateway and service layer.",
+    "Centralized SSO-style authentication gateway for the Municipality of Bahía Blanca (~400k residents, autentica.bahia.gob.ar): citizens authenticate once and access 10+ critical municipal services with a single token. 2+ years uninterrupted in production. Identity is validated against national registries — ARCA, ANSES, RENAPER, and Mi Argentina — on every login; the gateway is the sole component that calls those APIs and the sole issuer of session tokens. Legacy systems consume signed tokens and enforce RBAC; they never re-authenticate. No PII in tokens; fail safe when national APIs are unavailable. Audit and RBAC at gateway and service layer.",
   diagramType: "identity",
   adrs: [
     { title: "Gateway as sole issuer of session tokens; legacy systems validate only", href: "#" },
@@ -252,14 +252,14 @@ const municipalIdentity: Project = {
     { title: "Auditoría de autenticación y emisión de tokens", href: "#" },
   ],
   scaleConstraints: {
-    requestVolume: "~45k logins/month; token validation on every request to downstream services.",
+    requestVolume: "City of ~400k residents; token validation on every request to downstream services across 10+ city systems.",
     concurrency: "Gateway is single writer for tokens; services are read-only validators. No distributed lock; stateless validation.",
     externalDependencies: "Mi Argentina, RENAPER, ARCA. Login depends on at least one being available; degraded mode (unverified session or reject) when all are down.",
     failureModes: "National APIs down or slow → degraded mode or login failure; no \"verified\" issued without verification. Token validation failure → 401; no fallback to legacy auth.",
     dataConsistency: "Session and verification state only in gateway; tokens are signed assertions. Services do not persist identity state; they validate and apply RBAC per request.",
   },
   scaleConstraintsEs: {
-    requestVolume: "~45k logins/mes; validación de token en cada request a servicios downstream.",
+    requestVolume: "Ciudad de ~400k habitantes; validación de token en cada request a servicios downstream en 10+ sistemas municipales.",
     concurrency: "El gateway es el único escritor de tokens; los servicios son solo validadores. Sin lock distribuido; validación stateless.",
     externalDependencies: "Mi Argentina, RENAPER, ARCA. El login depende de que al menos uno esté disponible; modo degradado (sesión no verificada o rechazo) cuando todos están caídos.",
     failureModes: "APIs nacionales caídas o lentas → modo degradado o fallo de login; sin 'verificado' emitido sin verificación. Fallo de validación de token → 401; sin fallback a auth legacy.",
@@ -347,7 +347,7 @@ const municipalIdentity: Project = {
   titleEs: "Plataforma municipal de identidad unificada",
   techEs: "Identidad • Límites de confianza • RBAC",
   overviewEs:
-    "Gateway de autenticación estilo SSO para el Municipio de Bahía Blanca (autentica.bahia.gob.ar): los ciudadanos se autentican una vez y acceden a 10+ servicios municipales críticos con un único token. ~15k logins/mes, 2 años en producción ininterrumpida. La identidad se valida contra registros nacionales — ARCA, ANSES, RENAPER y Mi Argentina — en cada login; el gateway es el único componente que llama esas APIs y el único emisor de tokens de sesión. Sistemas legacy consumen tokens firmados y aplican RBAC; no re-autentican. Sin PII en tokens; fail safe cuando las APIs nacionales no están disponibles. Auditoría y RBAC en gateway y capa de servicio.",
+    "Gateway de autenticación estilo SSO para el Municipio de Bahía Blanca (~400k habitantes, autentica.bahia.gob.ar): los ciudadanos se autentican una vez y acceden a 10+ servicios municipales críticos con un único token. 2+ años en producción ininterrumpida. La identidad se valida contra registros nacionales — ARCA, ANSES, RENAPER y Mi Argentina — en cada login; el gateway es el único componente que llama esas APIs y el único emisor de tokens de sesión. Sistemas legacy consumen tokens firmados y aplican RBAC; no re-autentican. Sin PII en tokens; fail safe cuando las APIs nacionales no están disponibles. Auditoría y RBAC en gateway y capa de servicio.",
 };
 
 const PAYMENT_ORCHESTRATOR_ASCII = `Client
@@ -515,7 +515,7 @@ const paymentOrchestrator: Project = {
     "Diseñé e implementé un proceso de pagos seguro para reintentos con estrictas garantías de idempotencia bajo envíos concurrentes. Claves de idempotencia en el request; outbox para llamadas al proveedor; reconciliación por webhook con event_id. Garantía: sin doble cobro ante reintentos del cliente, webhooks duplicados o falla de red entre commit en DB y llamada al proveedor.",
 };
 
-const projects: Project[] = [patagoniaDreams, municipalIdentity, paymentOrchestrator];
+const projects: Project[] = [patagoniaDreams, municipalIdentity];
 
 export function getProjectBySlug(slug: string): Project | null {
   return projects.find((p) => p.slug === slug) ?? null;

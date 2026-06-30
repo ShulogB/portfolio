@@ -8,11 +8,11 @@ const en = {
   hero: {
     name: "Giuliano Bentevenga",
     subtitle:
-      "Backend Lead with 4+ years in production. I've built municipal identity systems and transactional booking platforms from scratch, focusing on scalability, security, and reliability that holds up in the real world.",
+      "Backend engineer with 4+ years in production. Built a transactional booking and payment platform for a tourism operator with 180k+ passengers/year and a municipal identity gateway for a city of 400k residents — designed, built, and led from scratch.",
     location: "Argentina — open to remote",
     sidebarRole: "Backend Engineer · Systems that hold under pressure",
     impactLine:
-      "Specialized in payments (Mercado Pago, Stripe, Pix), identity (ARCA, ANSES, RENAPER, Mi Argentina), and third-party integrations (Google, Meta, Amazon SES). I design systems that stay correct under concurrency and scale as the business grows.",
+      "Specialized in payments (Mercado Pago, Stripe), identity verification (ARCA, ANSES, RENAPER, Mi Argentina), and external integrations (Google, Meta, AWS, WhatsApp Business). I run security audit programs and design systems that stay correct under concurrency and retries.",
   },
   /** Short intro above production project cards on the home page. */
   productionProjectsIntro:
@@ -109,6 +109,30 @@ const en = {
           impact:
             "Zero orphaned bookings during migration. The field self-fills on the first webhook hit — no mass migration script, no downtime, no manual backfill. The transition period was observable from logs.",
         },
+        {
+          context:
+            "Backend runs 3 replicas on Kubernetes. Cache was LocMemCache (per-process RAM), so invalidating an activity on one pod left the other two serving stale data until TTL expired. DRF rate limiting was also per-pod — a '3 reservations/minute' limit effectively allowed 9 if requests spread across replicas.",
+          whatYouDid:
+            "Migrated to shared Redis (ElastiCache) with a deliberate split: general cache uses IGNORE_EXCEPTIONS=True (fail-open — a Redis outage falls through to DB silently, no 500s), but a separate 'throttle' cache alias uses IGNORE_EXCEPTIONS=False (fail-closed) exclusively for sensitive scopes: login, checkout, reservation creation, coupon redemption. Global anon/user throttling kept fail-open — making it fail-closed would have turned any Redis blip into a total API outage.",
+          impact:
+            "Cross-pod staleness eliminated in normal operation. Rate-limit bypass on auth and checkout closed even during a Redis outage, without sacrificing overall availability. The fail-open/fail-closed split was a deliberate trade-off documented in the security audit.",
+        },
+        {
+          context:
+            "Stripe webhook idempotency used cache.add('stripe_event:{event_id}', 1, timeout=86400) — if the key existed, the event was assumed processed. After migrating to Redis with IGNORE_EXCEPTIONS=True, a Redis outage makes cache.add() return None (no exception). 'if not cache.add(...)' evaluates 'not None' as True — the handler enters the 'already processed' branch without processing anything, returns 200 to Stripe, Stripe stops retrying, and the customer's booking never gets confirmed. No error in logs.",
+          whatYouDid:
+            "Moved Stripe event deduplication out of the cache layer entirely. Modelled idempotency at the database level: a StripeEvent table with a unique constraint on event_id, using get_or_create() as the source of truth. Cache can remain as an optional fast-path; it cannot be a correctness guarantee for money.",
+          impact:
+            "Closes a silent failure mode where a Redis outage causes customers to be charged without their booking being confirmed — producing no error logs and no retry from the provider. The fix made the risk direction clear: the original concern was double charge; the actual bug was silent payment loss.",
+        },
+        {
+          context:
+            "With stackable promotions, flash deals, and coupons, there was a structural risk: if the final price was computed in the frontend and trusted by the backend, a client could manipulate the amount charged.",
+          whatYouDid:
+            "Backend recomputes the full price server-side on booking creation, ignoring any client-sent amount. Stripe and Mercado Pago checkout use the price already persisted in the DB row — never the request payload. Documented as a mandatory convention for any future pricing logic change.",
+          impact:
+            "Eliminates an entire class of pricing fraud by design. No per-feature validation to keep updated as new discount types are added — the invariant is structural.",
+        },
       ],
     },
     {
@@ -121,19 +145,6 @@ const en = {
             "Central gateway issues tokens; downstream services validate and apply RBAC only. Minimal claims in tokens, fail-safe when national APIs are unavailable, audit on sensitive paths.",
           impact:
             "One trust boundary instead of many implicit ones; easier reasoning about security and compliance at interview depth.",
-        },
-      ],
-    },
-    {
-      projectTitle: "Payment orchestrator (design)",
-      items: [
-        {
-          context:
-            "Payment initiation and webhooks must stay correct under retries, duplicates, and overlapping writes.",
-          whatYouDid:
-            "Required idempotency keys for initiations, outbox-style separation for provider calls, webhook handling idempotent by provider event id, tight transaction boundaries per state transition.",
-          impact:
-            "Duplicate events and client retries become safe paths instead of incident generators—matches what senior roles expect you to articulate.",
         },
       ],
     },
@@ -171,10 +182,10 @@ const en = {
     },
   ],
   executiveSnapshot: [
-    "Booking platform for an operator with 180k+ passengers/year and 7,000+ five-star Google reviews.",
-    "~15k logins/month on municipal identity gateway (autentica.bahia.gob.ar); 10+ critical city services centralized, 2 years uninterrupted in production.",
-    "p95 webhook-to-DB under 400 ms; 8+ backend services consume gateway tokens.",
-    "Integrations: Mercado Pago · Stripe · Pix · AWS (Cognito, SES, Secrets Manager) · Google (OAuth, My Business, Merchant Center) · Meta · ARCA · ANSES · RENAPER · Mi Argentina.",
+    "Booking platform for a tourism operator with 180k+ passengers/year and 7,000+ five-star Google reviews — B2C e-commerce and B2B partner tiers, built and led from scratch.",
+    "Municipal identity gateway for the city of Bahía Blanca (~400k residents, autentica.bahia.gob.ar): citizens authenticate once across 10+ city services; 2+ years uninterrupted in production.",
+    "Stack: Python 3.12 · Django 5.2 LTS · PostgreSQL · Redis · Docker · GitHub Actions CI/CD.",
+    "Integrations: Mercado Pago · Stripe · AWS (EKS, Cognito, SES, S3, ElastiCache, Secrets Manager) · Google (OAuth, My Business, Merchant Center) · Meta · WhatsApp (WATI) · ARCA · ANSES · RENAPER · Mi Argentina.",
   ],
   caseStudies: [
     {
@@ -261,9 +272,9 @@ const en = {
     "Pessimistic lock (SELECT FOR UPDATE) on availability when creating a reservation; double-booking eliminated at observed conflict rate.",
     "Identity validated on every login; never issue \"verified\" when verification failed. Degraded modes when national APIs are unavailable.",
   ],
-  stack: ["Python", "Django REST Framework", "PostgreSQL"],
-  stackComplementary: ["AWS", "CI/CD", "GitHub Actions", "Docker"],
-  stackIntegrations: ["Google OAuth", "Mercado Pago", "Stripe", "Pix", "Amazon SES", "Cognito", "Meta"],
+  stack: ["Python 3.12", "Django 5.2 LTS", "Django REST Framework", "PostgreSQL"],
+  stackComplementary: ["Redis", "Docker", "GitHub Actions", "CI/CD"],
+  stackIntegrations: ["Mercado Pago", "Stripe", "AWS (EKS · Cognito · SES · S3)", "Google (OAuth · My Business · Merchant Center)", "WhatsApp (WATI)", "Meta", "ARCA · ANSES · RENAPER"],
   explicitTradeoffs: [
     { decision: "Webhooks as single source of truth for \"paid\".", gained: "No frontend or redirect driving state; provider is authority. Double-apply impossible by design.", sacrificed: "User waits for webhook; we depend on provider delivery and our endpoint availability. No instant \"paid\" from redirect." },
     { decision: "Pessimistic lock (SELECT FOR UPDATE) on availability.", gained: "No double-booking; deterministic behaviour at consistency boundary.", sacrificed: "Throughput on hot slots limited; lock contention under load. No optimistic retry path." },
@@ -332,7 +343,7 @@ const en = {
       sacrificedLabel: "Sacrificed:",
     },
     footer: "Backend systems built for production.",
-    adminLogin: "Admin",
+    adminLogin: "",
     project: { overview: "Overview", viewLiveSite: "View live site", deepDive: "Deep dive", images: "Images" },
   } as UILabels,
 };

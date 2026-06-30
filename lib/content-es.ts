@@ -62,7 +62,7 @@ const uiEs = {
     sacrificedLabel: "Sacrificado:",
   },
   footer: "Sistemas backend para producción.",
-  adminLogin: "Admin",
+  adminLogin: "",
   project: { overview: "Resumen", viewLiveSite: "Ver sitio", deepDive: "Profundización", images: "Imágenes" },
 } as UILabels;
 
@@ -70,11 +70,11 @@ const es = {
   hero: {
     name: "Giuliano Bentevenga",
     subtitle:
-      "Backend Lead con +4 años en producción. Construí sistemas de identidad municipal y plataformas de reservas transaccionales desde cero, con foco en escalabilidad, seguridad y contratos que aguantan en producción real.",
+      "Ingeniero backend con +4 años en producción. Construí una plataforma transaccional de reservas y pagos para una operadora con +180k pasajeros/año y un gateway de identidad municipal para una ciudad de 400k habitantes — diseñado, construido y liderado desde cero.",
     location: "Argentina — abierto a remoto",
     sidebarRole: "Ingeniero Backend · Sistemas que aguantan bajo presión",
     impactLine:
-      "Especializado en pagos (Mercado Pago, Stripe, Pix), identidad (ARCA, ANSES, RENAPER, Mi Argentina) e integraciones con terceros (Google, Meta, Amazon SES). Diseño sistemas que se mantienen correctos bajo concurrencia y escalan junto con el negocio.",
+      "Especializado en pagos (Mercado Pago, Stripe), verificación de identidad (ARCA, ANSES, RENAPER, Mi Argentina) e integraciones externas (Google, Meta, AWS, WhatsApp Business). Corro programas de auditoría de seguridad y diseño sistemas que se mantienen correctos bajo concurrencia y reintentos.",
   },
   productionProjectsIntro:
     "Dos sistemas que construí y lidero en producción. Abrí un proyecto para ver el desglose técnico completo: ADRs, restricciones de escala y modos de falla.",
@@ -170,6 +170,30 @@ const es = {
           impact:
             "Cero reservas huérfanas durante la migración. El campo se autorrellena en el primer webhook — sin script de migración masiva, sin downtime, sin backfill manual. El período de transición fue observable desde los logs.",
         },
+        {
+          context:
+            "El backend corre 3 réplicas en Kubernetes. El caché era LocMemCache (RAM por proceso), así que invalidar una actividad en un pod dejaba a los otros dos sirviendo datos viejos hasta que expiraba el TTL. El rate limiting de DRF también era por pod — un límite de '3 reservas/minuto' permitía efectivamente 9 si las requests se repartían entre réplicas.",
+          whatYouDid:
+            "Migré a Redis compartido (ElastiCache) con una separación deliberada: el caché general usa IGNORE_EXCEPTIONS=True (fail-open — si Redis cae, las operaciones devuelven None y van a la DB sin lanzar 500s), pero un alias 'throttle' separado usa IGNORE_EXCEPTIONS=False (fail-closed) exclusivamente para scopes sensibles: login, checkout, creación de reserva, canje de cupón. El throttling general se mantuvo fail-open — hacerlo fail-closed hubiera convertido cualquier blip de Redis en una caída total de la API.",
+          impact:
+            "Staleness cross-pod eliminado en operación normal. Bypass de rate-limit en auth y checkout cerrado incluso durante un outage de Redis, sin sacrificar disponibilidad general. La separación fail-open/fail-closed fue un trade-off deliberado documentado en la auditoría de seguridad.",
+        },
+        {
+          context:
+            "La idempotencia del webhook de Stripe usaba cache.add('stripe_event:{event_id}', 1, timeout=86400) — si la key existía, el evento se asumía procesado. Al migrar a Redis con IGNORE_EXCEPTIONS=True, un outage de Redis hace que cache.add() devuelva None en lugar de lanzar. 'if not cache.add(...)' evalúa 'not None' como True — el handler entra al branch de 'ya procesado' sin haber procesado nada, devuelve 200 a Stripe, Stripe deja de reintentar y la reserva del cliente nunca se confirma. Sin error en logs.",
+          whatYouDid:
+            "Moví la deduplicación de eventos de Stripe fuera de la capa de caché por completo. Decisión: modelar idempotencia a nivel de base de datos con una tabla StripeEvent con constraint único en event_id y get_or_create() como fuente de verdad. El caché puede existir como fast-path opcional; no puede ser una garantía de corrección para dinero.",
+          impact:
+            "Cierra un modo de falla silencioso donde un outage de Redis causa que clientes sean cobrados sin que su reserva se confirme — sin errores en logs y sin reintento del proveedor. El fix aclaró la dirección del riesgo: el temor original era doble cobro; el bug real era pérdida silenciosa del pago.",
+        },
+        {
+          context:
+            "Con promociones, flash deals y cupones combinables, el riesgo estructural era que el precio final se calculara en el frontend y el backend lo confiara — un cliente podría manipular el monto cobrado.",
+          whatYouDid:
+            "El backend recalcula el precio completo server-side al crear el booking, ignorando cualquier monto enviado por el cliente. Stripe y Mercado Pago toman el precio de la fila ya persistida en la DB — nunca del payload del request. Documentado como convención obligatoria para cualquier cambio futuro de lógica de precios.",
+          impact:
+            "Elimina una clase entera de fraude de pricing por diseño. Sin validación por feature que mantener al día cuando se agregan nuevos tipos de descuento — el invariante es estructural.",
+        },
       ],
     },
     {
@@ -185,19 +209,6 @@ const es = {
         },
       ],
     },
-    {
-      projectTitle: "Orquestador de pagos (diseño)",
-      items: [
-        {
-          context:
-            "Inicios de pago y webhooks tienen que seguir correctos con reintentos, duplicados y writes concurrentes.",
-          whatYouDid:
-            "Idempotencia en altas de pago, patrón tipo outbox para llamadas a proveedor, webhooks idempotentes por id de evento, transacciones acotadas por transición de estado.",
-          impact:
-            "Los duplicados dejan de ser modo incendio: es la clase de historia que esperan escuchar en entrevistas senior.",
-        },
-      ],
-    },
   ],
   principles: [
     { title: "Una única fuente de verdad para estado crítico", description: "Un componente es el único escritor del estado de pago e identidad. El frontend no puede mutar estado transaccional o verificado; los sistemas legacy no autentican. Elimina escritores competidores y confianza del lado cliente en el camino crítico." },
@@ -208,10 +219,10 @@ const es = {
     { title: "Mínimos datos entre fronteras", description: "Tokens y payloads entre servicios llevan solo lo que el consumidor necesita para autorizar o cumplir el request. PII y datos crudos del registro se quedan en el lado que los posee. Limita el blast radius y preserva fronteras de compliance." },
   ],
   executiveSnapshot: [
-    "Plataforma de reservas para una operadora con +180k pasajeros/año y +7.000 reseñas 5 estrellas en Google.",
-    "~15k logins/mes en gateway de identidad municipal (autentica.bahia.gob.ar); 10+ servicios críticos centralizados, 2 años en producción ininterrumpida.",
-    "p95 webhook-a-DB bajo 400 ms; 8+ servicios backend consumen tokens del gateway.",
-    "Integraciones: Mercado Pago · Stripe · Pix · AWS (Cognito, SES, Secrets Manager) · Google (OAuth, My Business, Merchant Center) · Meta · ARCA · ANSES · RENAPER · Mi Argentina.",
+    "Plataforma de reservas para una operadora con +180k pasajeros/año y +7.000 reseñas 5 estrellas en Google — e-commerce B2C y niveles de partner B2B, construido y liderado desde cero.",
+    "Gateway de identidad municipal para la ciudad de Bahía Blanca (~400k habitantes, autentica.bahia.gob.ar): ciudadanos se autentican una vez en 10+ servicios; 2+ años en producción ininterrumpida.",
+    "Stack: Python 3.12 · Django 5.2 LTS · PostgreSQL · Redis · Docker · GitHub Actions CI/CD.",
+    "Integraciones: Mercado Pago · Stripe · AWS (EKS, Cognito, SES, S3, ElastiCache, Secrets Manager) · Google (OAuth, My Business, Merchant Center) · Meta · WhatsApp (WATI) · ARCA · ANSES · RENAPER · Mi Argentina.",
   ],
   caseStudies: [
     {
@@ -298,9 +309,9 @@ const es = {
     "Bloqueo pesimista (SELECT FOR UPDATE) en disponibilidad al crear reserva; doble reserva eliminada en la tasa de conflicto observada.",
     "Identidad validada en cada login; nunca emitir \"verified\" cuando falló la verificación. Modos degradados cuando las APIs nacionales no están.",
   ],
-  stack: ["Python", "Django REST Framework", "PostgreSQL"],
-  stackComplementary: ["AWS", "CI/CD", "GitHub Actions", "Docker"],
-  stackIntegrations: ["Google OAuth", "Mercado Pago", "Stripe", "Pix", "Amazon SES", "Cognito", "Meta"],
+  stack: ["Python 3.12", "Django 5.2 LTS", "Django REST Framework", "PostgreSQL"],
+  stackComplementary: ["Redis", "Docker", "GitHub Actions", "CI/CD"],
+  stackIntegrations: ["Mercado Pago", "Stripe", "AWS (EKS · Cognito · SES · S3)", "Google (OAuth · My Business · Merchant Center)", "WhatsApp (WATI)", "Meta", "ARCA · ANSES · RENAPER"],
   explicitTradeoffs: [
     { decision: "Webhooks como única fuente de verdad de \"pagado\".", gained: "Ni frontend ni redirect manejan estado; el proveedor es autoridad. Doble aplicación imposible por diseño.", sacrificed: "El usuario espera el webhook; dependemos del envío del proveedor y de nuestro endpoint. No hay \"pagado\" instantáneo desde el redirect." },
     { decision: "Bloqueo pesimista (SELECT FOR UPDATE) en disponibilidad.", gained: "Sin doble reserva; comportamiento determinista en la frontera de consistencia.", sacrificed: "Throughput en slots calientes limitado; contención bajo carga. Sin camino optimista de reintento." },
