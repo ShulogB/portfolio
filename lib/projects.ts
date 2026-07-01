@@ -76,14 +76,14 @@ const patagoniaDreams: Project = {
     { approach: "Optimistic locking on availability", reason: "Conflict rate on hot slots would cause high retry and poor UX; pessimistic lock gave predictable behaviour at observed load." },
     { approach: "Microservices per domain (payments, reservations, catalog)", reason: "Operational and consistency cost (distributed transactions, eventual consistency) not justified for current scale; modular monolith with clear boundaries chosen instead." },
     { approach: "CSV export for operations", reason: "Excel/CSV formula injection risk; replaced with JSON response and controlled data only." },
-    { approach: "Secrets or sensitive URLs in code or repo", reason: "All critical config (FRONTEND_URL, Cognito, Stripe, Panel, etc.) via env from AWS Secrets Manager." },
+    { approach: "Secrets or sensitive URLs in code or repo", reason: "All critical config (API keys, provider credentials, internal URLs, etc.) via env from AWS Secrets Manager." },
   ],
   rejectedApproachesEs: [
     { approach: "Frontend o redirect callback como fuente de 'pagado'", reason: "Los redirects y el estado del cliente son poco confiables; los reintentos del proveedor y múltiples pestañas permitirían doble aplicación o actualizaciones perdidas." },
     { approach: "Bloqueo optimista en disponibilidad", reason: "La tasa de conflictos en slots muy demandados generaría muchos reintentos y mala UX; el lock pesimista dio comportamiento predecible al load observado." },
     { approach: "Microservicios por dominio (pagos, reservas, catálogo)", reason: "El costo operacional y de consistencia (transacciones distribuidas, consistencia eventual) no se justifica al scale actual; se eligió monolito modular con fronteras claras." },
     { approach: "Export CSV para operaciones", reason: "Riesgo de inyección de fórmulas Excel/CSV; reemplazado por respuesta JSON con datos controlados." },
-    { approach: "Secrets o URLs sensibles en código o repo", reason: "Toda la config crítica (FRONTEND_URL, Cognito, Stripe, Panel, etc.) via env desde AWS Secrets Manager." },
+    { approach: "Secrets o URLs sensibles en código o repo", reason: "Toda la config crítica (API keys, credenciales de proveedores, URLs internas, etc.) via env desde AWS Secrets Manager." },
   ],
   whatWouldBreak: [
     "Single DB or replica failure: all reservations and payment state in one store; no automatic failover.",
@@ -126,7 +126,7 @@ const patagoniaDreams: Project = {
       title: "Security and trust boundaries",
       paragraphs: [
         "Injection vectors removed: CSV export replaced by JSON response to avoid Excel/CSV formula injection; URL validation in email templates (http_url filter: only http/https) to prevent XSS via javascript: in href.",
-        "Secrets out of code: critical config (FRONTEND_URL, WHATSAPP_NUMBER, social URLs, Cognito, Stripe, Panel, etc.) via environment variables from AWS Secrets Manager; no sensitive values in repo.",
+        "Secrets out of code: all critical config (API keys, provider credentials, internal URLs) via environment variables from AWS Secrets Manager; no sensitive values in repo.",
         "Development follows a structured flow: feature branches → CI checks (linting, security scans) → PR review → merge to production. No direct pushes to the production branch.",
       ],
     },
@@ -185,7 +185,7 @@ const patagoniaDreams: Project = {
       title: "Seguridad y límites de confianza",
       paragraphs: [
         "Vectores de inyección eliminados: export CSV reemplazado por respuesta JSON para evitar inyección de fórmulas Excel/CSV; validación de URL en templates de email (filtro http_url: solo http/https) para prevenir XSS via javascript: en href.",
-        "Secrets fuera del código: config crítica (FRONTEND_URL, WHATSAPP_NUMBER, URLs sociales, Cognito, Stripe, Panel, etc.) via variables de entorno desde AWS Secrets Manager; sin valores sensibles en el repo.",
+        "Secrets fuera del código: toda la config crítica (API keys, credenciales de proveedores, URLs internas) via variables de entorno desde AWS Secrets Manager; sin valores sensibles en el repo.",
         "El desarrollo sigue un flujo estructurado: ramas de feature → CI checks (linting, escaneos de seguridad) → PR review → merge a producción. Sin pushes directos a la rama de producción.",
       ],
     },

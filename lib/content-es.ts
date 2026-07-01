@@ -74,7 +74,7 @@ const es = {
     location: "Argentina — abierto a remoto",
     sidebarRole: "Ingeniero Backend · Sistemas que aguantan bajo presión",
     impactLine:
-      "Especializado en pagos (Mercado Pago, Stripe), verificación de identidad (ARCA, ANSES, RENAPER, Mi Argentina) e integraciones externas (Google, Meta, AWS, WhatsApp Business). Corro programas de auditoría de seguridad y diseño sistemas que se mantienen correctos bajo concurrencia y reintentos.",
+      "Especializado en pagos (Mercado Pago, Stripe, Pix), verificación de identidad (ARCA, ANSES, RENAPER, Mi Argentina) e integraciones externas (Google, Meta, AWS, WhatsApp Business). Corro programas de auditoría de seguridad y diseño sistemas que se mantienen correctos bajo concurrencia y reintentos.",
   },
   productionProjectsIntro:
     "Dos sistemas que construí y lidero en producción. Abrí un proyecto para ver el desglose técnico completo: ADRs, restricciones de escala y modos de falla.",
@@ -221,8 +221,8 @@ const es = {
   executiveSnapshot: [
     "Plataforma de reservas para una operadora con +180k pasajeros/año y +7.000 reseñas 5 estrellas en Google — e-commerce B2C y niveles de partner B2B, construido y liderado desde cero.",
     "Gateway de identidad municipal para la ciudad de Bahía Blanca (~400k habitantes, autentica.bahia.gob.ar): ciudadanos se autentican una vez en 10+ servicios; 2+ años en producción ininterrumpida.",
-    "Stack: Python 3.12 · Django 5.2 LTS · PostgreSQL · Redis · Docker · GitHub Actions CI/CD.",
-    "Integraciones: Mercado Pago · Stripe · AWS (EKS, Cognito, SES, S3, ElastiCache, Secrets Manager) · Google (OAuth, My Business, Merchant Center) · Meta · WhatsApp (WATI) · ARCA · ANSES · RENAPER · Mi Argentina.",
+    "Stack: Python · Django · FastAPI · PostgreSQL · Redis · Docker · GitHub Actions CI/CD.",
+    "Integraciones: Mercado Pago · Stripe · Pix · AWS (Cognito, SES, S3, Secrets Manager) · Google (OAuth, My Business, Merchant Center) · Meta · WhatsApp (WATI) · ARCA · ANSES · RENAPER · Mi Argentina.",
   ],
   caseStudies: [
     {
@@ -309,9 +309,9 @@ const es = {
     "Bloqueo pesimista (SELECT FOR UPDATE) en disponibilidad al crear reserva; doble reserva eliminada en la tasa de conflicto observada.",
     "Identidad validada en cada login; nunca emitir \"verified\" cuando falló la verificación. Modos degradados cuando las APIs nacionales no están.",
   ],
-  stack: ["Python 3.12", "Django 5.2 LTS", "Django REST Framework", "PostgreSQL"],
+  stack: ["Python", "Django · FastAPI", "Django REST Framework", "PostgreSQL"],
   stackComplementary: ["Redis", "Docker", "GitHub Actions", "CI/CD"],
-  stackIntegrations: ["Mercado Pago", "Stripe", "AWS (EKS · Cognito · SES · S3)", "Google (OAuth · My Business · Merchant Center)", "WhatsApp (WATI)", "Meta", "ARCA · ANSES · RENAPER"],
+  stackIntegrations: ["Mercado Pago", "Stripe", "Pix", "AWS (Cognito · SES · S3 · Secrets Manager)", "Google (OAuth · My Business · Merchant Center)", "WhatsApp (WATI)", "Meta", "ARCA · ANSES · RENAPER · Mi Argentina"],
   explicitTradeoffs: [
     { decision: "Webhooks como única fuente de verdad de \"pagado\".", gained: "Ni frontend ni redirect manejan estado; el proveedor es autoridad. Doble aplicación imposible por diseño.", sacrificed: "El usuario espera el webhook; dependemos del envío del proveedor y de nuestro endpoint. No hay \"pagado\" instantáneo desde el redirect." },
     { decision: "Bloqueo pesimista (SELECT FOR UPDATE) en disponibilidad.", gained: "Sin doble reserva; comportamiento determinista en la frontera de consistencia.", sacrificed: "Throughput en slots calientes limitado; contención bajo carga. Sin camino optimista de reintento." },
