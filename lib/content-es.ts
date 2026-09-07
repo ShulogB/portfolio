@@ -2,7 +2,7 @@
  * Contenido en español. Cargado bajo demanda en el cliente (dynamic import)
  * cuando el usuario elige idioma ES, para reducir el bundle inicial.
  */
-import type { AdrLink, ExperienceSummaryItem, OptimizeForItem, ProductionDecision, TradeoffItem, UILabels } from "./content-types";
+import type { AdrLink, ExperienceSummaryItem, OptimizeForItem, PersonalProjectContent, ProductionDecision, TradeoffItem, UILabels } from "./content-types";
 
 const uiEs = {
   hero: {
@@ -24,6 +24,7 @@ const uiEs = {
     experienceSummary: "Impacto y experiencia",
     caseStudies: "Estudios de caso",
     productionProjects: "Proyectos en producción",
+    personalProjects: "Proyectos de IA",
     problemsSolved: "Problemas que aparecieron y cómo los resolvimos",
     principles: "Principios de ingeniería",
     howBuild: "Cómo construyo backends de producción",
@@ -78,6 +79,96 @@ const es = {
   },
   productionProjectsIntro:
     "Dos sistemas que construí y lidero en producción. Abrí un proyecto para ver el desglose técnico completo: ADRs, restricciones de escala y modos de falla.",
+  personalProjectsIntro:
+    "Proyectos personales donde llevo mi base backend a la IA aplicada: integración de LLMs, workflows agénticos y ML. No son sistemas en producción con clientes, pero los construyo con la misma disciplina de ingeniería: medir antes de shippear, cuidar las fronteras y mantener los datos honestos.",
+  personalProjects: [
+    {
+      slug: "football-predictor",
+      title: "Football Predictor",
+      tech: "FastAPI · PostgreSQL/SQL · scikit-learn · Groq",
+      tagline:
+        "Recomendador para un juego de fantasy. Un pipeline automatizado ingesta estadísticas de partidos y calificaciones de jugadores, arma features as-of sin fuga y alimenta un clasificador gradient-boosting desplegado como ensemble junto a un motor Poisson/Elo. Una capa de LLM explica cada pick sobre datos reales con function calling. Construido e iterado a diario con Claude Code (MCP, subagentes).",
+      tags: ["LLM", "ML", "function calling", "eval loops", "pipeline de datos", "Claude Code / MCP"],
+      diagram: "ml" as const,
+      problems: [
+        {
+          context:
+            "El primer enfoque predecía los puntos exactos de un jugador con un regresor. Sonaba bien, pero el puntaje por fecha es muy ruidoso: los puntos de defensor/arquero dependen de la valla invicta, que es casi una moneda al aire.",
+          whatYouDid:
+            "Armé un backtest honesto (entrenar fechas 1–4, predecir la 5): MAE 2.18 vs un baseline de 'usá el promedio de la temporada' de 2.52 — una mejora marginal, con correlación de ranking de solo ~0.09. Así que reformulé el target de regresión a clasificación de 'buen partido' (10+ puntos) y lo shippée como un ajuste de ensemble (±12%) sobre el score basado en reglas, no como predictor independiente.",
+          impact:
+            "Dejé de shippear un modelo que apenas superaba la media. El clasificador (AUC ~0.65) suma señal donde es real y le cede al heurístico donde no lo es. Medir primero se volvió la regla: cada cambio del modelo se backtestea antes de ir a producción.",
+        },
+        {
+          context:
+            "El modelo se entrenaba en mi host (numpy 2.5, lightgbm) pero el contenedor de la API corría un scikit-learn más viejo sin lightgbm. Cargar el artefacto entrenado en el contenedor fallaba o arriesgaba incompatibilidad silenciosa.",
+          whatYouDid:
+            "Dejé lightgbm por un HistGradientBoostingClassifier y moví el entrenamiento adentro del contenedor, para que el artefacto se produzca y se consuma bajo versiones idénticas.",
+          impact:
+            "Eliminé los bugs de version-drift en la frontera train/serve. El modelo que se entrena es exactamente el que sirve.",
+        },
+        {
+          context:
+            "Agregué features de timing de goles (¿un equipo marca más en el 1er o 2do tiempo?). De golpe solo 3 de 208 goles se capturaban con su mitad.",
+          whatYouDid:
+            "El regex que extrae un gol requiere el prefijo del minuto, pero mi paso de detección de mitad lo estaba quitando antes de que corriera el regex del gol. Lo arreglé para detectar la mitad sin mutar el string, pasando el token original al parser de goles.",
+          impact:
+            "La captura de timing pasó de 3/208 a 207/208 (99%). La lección: una 'limpieza' upstream mataba silenciosamente a un parser downstream — invisible hasta que revisé los conteos.",
+        },
+        {
+          context:
+            "Matchear jugadores por nombre entre fuentes (stats, formaciones, transferencias) sobre un dataset de 720 jugadores generaba falsos positivos — un match laxo por nombre de pila unía a las personas equivocadas, así que un flag de 'no disponible' podía caer sobre un jugador totalmente distinto.",
+          whatYouDid:
+            "Reescribí el matching para requerir coincidencia de subconjunto de tokens del apellido y canonicalizar nombres de equipos, en vez del match laxo por nombre. Agregué overrides explícitos para transferencias mal listadas.",
+          impact:
+            "Reconstruí los datos de no-disponibles/formaciones limpios. Los homónimos (dos jugadores con el mismo apellido) son ahora el único caso ambiguo, y se resuelven explícitamente en vez de adivinarse.",
+        },
+        {
+          context:
+            "El recomendador se apoyaba en el precio y la titularidad de la temporada anterior, así que seguía sugiriendo jugadores caros que ya no son titulares — la trampa clásica de 'caro pero no juega'.",
+          whatYouDid:
+            "Hice autoritativo el XI probable y armé la titularidad por recencia (una ventana sobre las últimas cuatro fechas de formaciones reales), con un rescate de 'figura reciente' para un suplente que venía de ser figura o goleador.",
+          impact:
+            "Las recomendaciones siguen a quién juega realmente esta fecha, no a quién era caro la temporada pasada.",
+        },
+      ],
+    },
+    {
+      slug: "pokeria",
+      title: "Pokeria",
+      tech: "FastAPI async · PostgreSQL · JWT · Groq",
+      tagline:
+        "Entrenador de manos de poker para cash de micro-límites. Parsea historiales de manos, analiza cada mano con un LLM anclado en el contexto del juego y devuelve un veredicto tipado y estructurado que la UI renderiza directamente.",
+      tags: ["LLM", "structured outputs", "guardrails", "JWT"],
+      diagram: "llm" as const,
+      problems: [
+        {
+          context:
+            "El frontend necesita campos específicos (resumen, análisis por calle, errores, score…). Un modelo que devuelve prosa libre no se puede renderizar de forma confiable.",
+          whatYouDid:
+            "Forcé structured outputs — un schema JSON fijo que el modelo debe completar (resumen, análisis por calle, sizing, errores, mejoras, línea alternativa, concepto clave, score). La API lo valida antes de que llegue al cliente.",
+          impact:
+            "La UI renderiza el análisis de forma determinista; una respuesta malformada se atrapa en el servidor en vez de corromper la vista.",
+        },
+        {
+          context:
+            "Un chat abierto sobre texto de manos provisto por el usuario es una superficie de prompt injection — una nota de una mano podría intentar desviar al modelo.",
+          whatYouDid:
+            "Acoté el asistente solo a poker, con guardrails que tratan los datos de la mano estrictamente como contenido a analizar e ignoran cualquier instrucción embebida en ellos.",
+          impact:
+            "El asistente se mantiene en tema; las instrucciones inyectadas dentro de los datos del usuario no cambian su comportamiento.",
+        },
+        {
+          context:
+            "La estrategia en micro-límites se razona en big blinds, pero los historiales y la salida del modelo derivan a montos en dólares, lo que hace inconsistente el consejo.",
+          whatYouDid:
+            "Fijé el contexto del stack del héroe (100bb) y normalicé todo monto a big blinds de punta a punta — un conversor reescribe '$X.XX' a 'Xbb' tanto en el contexto de la IA como en el análisis renderizado.",
+          impact:
+            "El consejo es consistente en unidades y comparable entre manos, igual que como piensa realmente un jugador.",
+        },
+      ],
+    },
+  ] as PersonalProjectContent[],
   problemResolutions: [
     {
       projectTitle: "Patagonia Dreams — plataforma de reservas",

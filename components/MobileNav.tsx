@@ -17,6 +17,7 @@ const SECTIONS: {
 }[] = [
   { id: "home",     icon: "⌂",  label: { en: "HOME",  es: "HOME"  } },
   { id: "projects", icon: "◈",  label: { en: "PROJ",  es: "PROY"  } },
+  { id: "personal", icon: "✦",  label: { en: "AI",    es: "IA"    } },
   { id: "problems", icon: "⚡", label: { en: "BUILD", es: "BUILD" } },
   { id: "stack",    icon: "◻",  label: { en: "STACK", es: "STACK" } },
   { id: "contact",  icon: "✉",  label: { en: "MSG",   es: "MSG"   } },

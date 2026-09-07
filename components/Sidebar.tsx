@@ -10,7 +10,7 @@ const CASE_STUDY_LABELS: Record<string, string> = {
 
 const CASE_STUDY_SLUGS = ["patagonia-dreams", "municipal-identity"] as const;
 
-export type SectionId = "home" | "projects" | "problems" | "stack" | "contact";
+export type SectionId = "home" | "projects" | "personal" | "problems" | "stack" | "contact";
 
 type SidebarProps = {
   labels: {
@@ -19,6 +19,7 @@ type SidebarProps = {
     tagline: string;
     home: string;
     productionProjects: string;
+    personalProjects: string;
     problemsSolved: string;
     stack: string;
     contact: string;
@@ -136,6 +137,21 @@ export default function Sidebar({
                 ))}
               </ul>
             )}
+          </li>
+          <li>
+            <NavLink
+              section="personal"
+              project={selectedCaseStudySlug}
+              isActive={expandedSection === "personal"}
+              onClick={() => onSectionClick("personal")}
+              className={`block w-full text-left py-2.5 px-3 border-l-2 transition-colors cursor-pointer ${
+                expandedSection === "personal"
+                  ? "border-sega-cyan/80 bg-sega-cyan/10 text-sega-cyan/90 sidebar-item-active"
+                  : "border-transparent text-sega-muted hover:text-sega-white hover:bg-sega-cyan/5"
+              }`}
+            >
+              {labels.personalProjects}
+            </NavLink>
           </li>
           <li>
             <NavLink

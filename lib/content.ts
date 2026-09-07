@@ -17,6 +17,7 @@ export type {
   CaseStudyCardContent,
   ExperienceSummaryItem,
   OptimizeForItem,
+  PersonalProjectContent,
   ProblemResolutionItem,
   ProblemResolutionProjectGroup,
   ProductionDecision,

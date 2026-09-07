@@ -57,6 +57,20 @@ export type ProblemResolutionProjectGroup = {
   items: ProblemResolutionItem[];
 };
 
+/** Personal (non-production) project shown in its own grid. */
+export type PersonalProjectContent = {
+  slug: string;
+  title: string;
+  tech: string;
+  tagline: string;
+  liveUrl?: string;
+  repoUrl?: string;
+  tags: string[];
+  /** Which simple flow diagram to render. */
+  diagram: "ml" | "llm";
+  problems: ProblemResolutionItem[];
+};
+
 export type UILabels = {
   hero: {
     tagline: string;
@@ -79,6 +93,8 @@ export type UILabels = {
     caseStudies: string;
     /** Sidebar + section title for production work list. */
     productionProjects: string;
+    /** Sidebar + section title for personal (non-production) projects. */
+    personalProjects: string;
     problemsSolved: string;
     principles: string;
     howBuild: string;
