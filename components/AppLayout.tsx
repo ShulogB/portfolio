@@ -189,6 +189,7 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
           >
             <StackTags
               itemsPrincipal={content.stack}
+              itemsAI={content.stackAI}
               itemsComplementary={content.stackComplementary}
               itemsIntegrations={content.stackIntegrations}
             />

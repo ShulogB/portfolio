@@ -12,14 +12,20 @@ import {
   SiGoogle,
   SiMeta,
   SiPix,
+  SiFastapi,
+  SiOpenai,
+  SiPandas,
+  SiScikitlearn,
 } from "react-icons/si";
-import { TbBrandAws, TbMail, TbShieldLock, TbGitMerge } from "react-icons/tb";
+import { TbBrandAws, TbMail, TbShieldLock, TbGitMerge, TbBrain } from "react-icons/tb";
 import type { IconType } from "react-icons";
 
 const ICON_MAP: Record<string, IconType> = {
   Python: SiPython,
+  Django: SiDjango,
   PostgreSQL: SiPostgresql,
   "Django REST Framework": SiDjango,
+  FastAPI: SiFastapi,
   Docker: SiDocker,
   "GitHub Actions": SiGithubactions,
   "CI/CD": TbGitMerge,
@@ -31,10 +37,15 @@ const ICON_MAP: Record<string, IconType> = {
   "Google OAuth": SiGoogle,
   Meta: SiMeta,
   Pix: SiPix,
+  "LLM integration": TbBrain,
+  OpenAI: SiOpenai,
+  pandas: SiPandas,
+  "scikit-learn": SiScikitlearn,
 };
 
 type StackTagsProps = {
   itemsPrincipal: string[];
+  itemsAI?: string[];
   itemsComplementary?: string[];
   itemsIntegrations?: string[];
 };
@@ -85,6 +96,7 @@ function TagList({ items, dim = false }: { items: string[]; dim?: boolean }) {
 
 export default function StackTags({
   itemsPrincipal,
+  itemsAI = [],
   itemsComplementary = [],
   itemsIntegrations = [],
 }: StackTagsProps) {
@@ -94,6 +106,13 @@ export default function StackTags({
     <div className="space-y-4 w-full">
       <SectionDivider label={lang === "es" ? "Stack principal" : "Core stack"} />
       <TagList items={itemsPrincipal} />
+
+      {itemsAI.length > 0 && (
+        <>
+          <SectionDivider label={lang === "es" ? "IA / ML" : "AI / ML"} />
+          <TagList items={itemsAI} />
+        </>
+      )}
 
       {itemsComplementary.length > 0 && (
         <>

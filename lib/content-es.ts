@@ -410,8 +410,9 @@ const es = {
     "Bloqueo pesimista (SELECT FOR UPDATE) en disponibilidad al crear reserva; doble reserva eliminada en la tasa de conflicto observada.",
     "Identidad validada en cada login; nunca emitir \"verified\" cuando falló la verificación. Modos degradados cuando las APIs nacionales no están.",
   ],
-  stack: ["Python", "Django · FastAPI", "Django REST Framework", "PostgreSQL"],
-  stackComplementary: ["Redis", "Docker", "GitHub Actions", "CI/CD"],
+  stack: ["Python", "Django", "Django REST Framework", "PostgreSQL"],
+  stackAI: ["LLM integration", "OpenAI", "Groq", "Function calling", "RAG", "Eval loops", "Structured outputs (Pydantic)", "Claude Code / MCP", "pandas", "scikit-learn"],
+  stackComplementary: ["FastAPI", "Redis", "Docker", "GitHub Actions", "CI/CD"],
   stackIntegrations: ["Mercado Pago", "Stripe", "Pix", "AWS (Cognito · SES · S3 · Secrets Manager)", "Google (OAuth · My Business · Merchant Center)", "WhatsApp (WATI)", "Meta", "ARCA · ANSES · RENAPER · Mi Argentina"],
   explicitTradeoffs: [
     { decision: "Webhooks como única fuente de verdad de \"pagado\".", gained: "Ni frontend ni redirect manejan estado; el proveedor es autoridad. Doble aplicación imposible por diseño.", sacrificed: "El usuario espera el webhook; dependemos del envío del proveedor y de nuestro endpoint. No hay \"pagado\" instantáneo desde el redirect." },

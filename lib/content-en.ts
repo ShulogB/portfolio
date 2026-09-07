@@ -373,8 +373,9 @@ const en = {
     "Pessimistic lock (SELECT FOR UPDATE) on availability when creating a reservation; double-booking eliminated at observed conflict rate.",
     "Identity validated on every login; never issue \"verified\" when verification failed. Degraded modes when national APIs are unavailable.",
   ],
-  stack: ["Python", "Django · FastAPI", "Django REST Framework", "PostgreSQL"],
-  stackComplementary: ["Redis", "Docker", "GitHub Actions", "CI/CD"],
+  stack: ["Python", "Django", "Django REST Framework", "PostgreSQL"],
+  stackAI: ["LLM integration", "OpenAI", "Groq", "Function calling", "RAG", "Eval loops", "Structured outputs (Pydantic)", "Claude Code / MCP", "pandas", "scikit-learn"],
+  stackComplementary: ["FastAPI", "Redis", "Docker", "GitHub Actions", "CI/CD"],
   stackIntegrations: ["Mercado Pago", "Stripe", "Pix", "AWS (Cognito · SES · S3 · Secrets Manager)", "Google (OAuth · My Business · Merchant Center)", "WhatsApp (WATI)", "Meta", "ARCA · ANSES · RENAPER · Mi Argentina"],
   explicitTradeoffs: [
     { decision: "Webhooks as single source of truth for \"paid\".", gained: "No frontend or redirect driving state; provider is authority. Double-apply impossible by design.", sacrificed: "User waits for webhook; we depend on provider delivery and our endpoint availability. No instant \"paid\" from redirect." },
