@@ -8,6 +8,7 @@ import Hero from "./Hero";
 import ResumeSection from "./ResumeSection";
 import CollapsibleSection from "./CollapsibleSection";
 import CaseStudiesPanel from "./CaseStudiesPanel";
+import PersonalProjectsSection from "./PersonalProjectsSection";
 import ProblemsSolvedSection from "./ProblemsSolvedSection";
 import StackTags from "./StackTags";
 import ContactForm from "./ContactForm";
@@ -20,7 +21,7 @@ import { ADMIN_LOGIN_URL } from "@/lib/api";
 import { GITHUB_URL, LINKEDIN_URL } from "@/lib/site";
 import type { CaseStudyForCarousel } from "@/lib/caseStudyApi";
 
-const SECTION_IDS: SectionId[] = ["home", "projects", "problems", "stack", "contact"];
+const SECTION_IDS: SectionId[] = ["home", "projects", "personal", "problems", "stack", "contact"];
 
 const PROJECT_SLUGS = ["patagonia-dreams", "municipal-identity", "payment-orchestrator"];
 
@@ -122,6 +123,7 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
     tagline: content.ui.hero.tagline,
     home: ui.sections.home,
     productionProjects: ui.sections.productionProjects,
+    personalProjects: ui.sections.personalProjects,
     problemsSolved: ui.sections.problemsSolved,
     stack: ui.sections.stack,
     contact: ui.sections.contact,
@@ -149,6 +151,14 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
             centered
           >
             <CaseStudiesPanel selectedSlug={selectedCaseStudySlug} onSelect={handleCaseStudyClick} />
+          </CollapsibleSection>
+          <CollapsibleSection
+            id="personal"
+            title={ui.sections.personalProjects}
+            isExpanded={expandedSection === "personal"}
+            onHeaderClick={() => handleSectionClick("personal")}
+          >
+            <PersonalProjectsSection />
           </CollapsibleSection>
           <CollapsibleSection
             id="problems"

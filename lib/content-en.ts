@@ -2,7 +2,7 @@
  * Contenido en inglés. Cargado en el bundle inicial del cliente.
  * El contenido en español se carga bajo demanda (content-es.ts).
  */
-import type { AdrLink, ExperienceSummaryItem, OptimizeForItem, ProductionDecision, TradeoffItem, UILabels } from "./content-types";
+import type { AdrLink, ExperienceSummaryItem, OptimizeForItem, PersonalProjectContent, ProductionDecision, TradeoffItem, UILabels } from "./content-types";
 
 const en = {
   hero: {
@@ -17,6 +17,97 @@ const en = {
   /** Short intro above production project cards on the home page. */
   productionProjectsIntro:
     "Two systems I built and lead in production. Open a project for the full technical breakdown — ADRs, scale constraints, and failure modes.",
+  /** Short intro above the personal (non-production) projects grid. */
+  personalProjectsIntro:
+    "Personal projects where I take my backend foundation into applied AI — LLM integration, agentic workflows, and ML. Not production systems with clients, but built with the same engineering discipline: measure before shipping, guard the boundaries, keep the data honest.",
+  personalProjects: [
+    {
+      slug: "football-predictor",
+      title: "Football Predictor",
+      tech: "FastAPI · PostgreSQL/SQL · scikit-learn · Groq",
+      tagline:
+        "Recommender for a fantasy-football game. An automated pipeline ingests match stats and player ratings, builds leakage-free as-of features, and feeds a gradient-boosting classifier deployed as an ensemble next to a Poisson/Elo engine. An LLM layer explains each pick over real data via function calling. Built and iterated daily with Claude Code (MCP, subagents).",
+      tags: ["LLM", "ML", "function calling", "eval loops", "data pipeline", "Claude Code / MCP"],
+      diagram: "ml" as const,
+      problems: [
+        {
+          context:
+            "The first approach predicted a player's exact fantasy points with a regressor. It felt right, but per-round scoring is extremely noisy — defender/keeper points hinge on a clean sheet, which is close to a coin flip.",
+          whatYouDid:
+            "Built an honest backtest (train rounds 1–4, predict 5): MAE 2.18 vs a 'just use the season average' baseline of 2.52 — a marginal gain, with a rank correlation of only ~0.09. So I reframed the target from regression to classification of a 'good match' (10+ points) and shipped it as an ensemble nudge (±12%) on the rule-based score instead of a standalone predictor.",
+          impact:
+            "Stopped shipping a model that barely beat the mean. The classifier (AUC ~0.65) adds signal where it's real and defers to the heuristic where it isn't. Measure-first became the rule: every model change is backtested before it goes live.",
+        },
+        {
+          context:
+            "The model was trained on my host (numpy 2.5, lightgbm) but the API container ran an older scikit-learn with no lightgbm. Loading the trained artifact in the container either failed or risked silent incompatibility.",
+          whatYouDid:
+            "Dropped lightgbm for a HistGradientBoostingClassifier and moved training inside the container, so the artifact is always produced and consumed under identical library versions.",
+          impact:
+            "Eliminated version-drift bugs at the train/serve boundary. The model that's trained is exactly the model that serves.",
+        },
+        {
+          context:
+            "I added goal-timing features (does a team score more in the first or second half?). Suddenly only 3 of 208 goals were being captured with a half.",
+          whatYouDid:
+            "The regex that extracts a goal requires the minute prefix, but my half-detection step was stripping that prefix before the goal regex ran. Fixed it to detect the half without mutating the string, passing the original token to the goal parser.",
+          impact:
+            "Goal-timing capture went from 3/208 to 207/208 (99%). The lesson: an upstream 'cleanup' silently starved a downstream parser — invisible until I checked the counts.",
+        },
+        {
+          context:
+            "Matching players by name across sources (stats, lineups, transfers) over a 720-player dataset produced false positives — a loose first-name match linked the wrong people, so an 'unavailable' flag could land on a completely different player.",
+          whatYouDid:
+            "Rewrote matching to require a surname-token subset match and to canonicalize team names, instead of loose first-name matching. Added explicit transfer overrides for players listed at the wrong club.",
+          impact:
+            "Rebuilt the unavailable/lineup data clean. Homonyms (two players sharing a surname) are now the only ambiguous case, and they're resolved explicitly rather than guessed.",
+        },
+        {
+          context:
+            "The recommender leaned on price and prior-season titularity, so it kept suggesting expensive players who no longer start — the classic 'expensive but benched' trap.",
+          whatYouDid:
+            "Made the probable XI authoritative and layered titularity by recency (a window over the last four rounds of real lineups), with a 'recent standout' rescue for a benched player who was just a match figure or scorer.",
+          impact:
+            "Recommendations track who actually plays this week, not who was expensive last season.",
+        },
+      ],
+    },
+    {
+      slug: "pokeria",
+      title: "Pokeria",
+      tech: "async FastAPI · PostgreSQL · JWT · Groq",
+      tagline:
+        "Poker-hand trainer for micro-stakes cash games. It parses hand histories, analyzes each hand with an LLM grounded in game context, and returns a structured, typed verdict the UI renders directly.",
+      tags: ["LLM", "structured outputs", "guardrails", "JWT"],
+      diagram: "llm" as const,
+      problems: [
+        {
+          context:
+            "The frontend needs specific fields (summary, per-street analysis, mistakes, score…). A model returning free-form prose can't be rendered reliably.",
+          whatYouDid:
+            "Forced structured outputs — a fixed JSON schema the model must fill (summary, street analysis, sizing, mistakes, improvements, alternative line, key concept, score). The API validates it before it ever reaches the client.",
+          impact:
+            "The UI renders analysis deterministically; a malformed response is caught server-side instead of corrupting the view.",
+        },
+        {
+          context:
+            "An open chat over user-supplied hand text is a prompt-injection surface — a hand note could try to steer the model off-task.",
+          whatYouDid:
+            "Scoped the assistant to poker only, with guardrails that treat the hand data strictly as content to analyze and ignore any instructions embedded in it.",
+          impact:
+            "The assistant stays on-task; injected instructions inside user data don't change its behavior.",
+        },
+        {
+          context:
+            "Strategy at micro-stakes is reasoned in big blinds, but hand histories and model output drift into dollar amounts, which makes advice inconsistent.",
+          whatYouDid:
+            "Fixed the hero stack context (100bb) and normalized every amount to big blinds end-to-end — a converter rewrites '$X.XX' into 'Xbb' in both the AI context and the rendered analysis.",
+          impact:
+            "Advice is unit-consistent and comparable across hands, matching how a player actually thinks.",
+        },
+      ],
+    },
+  ] as PersonalProjectContent[],
   problemResolutions: [
     {
       projectTitle: "Patagonia Dreams — booking platform",
@@ -318,6 +409,7 @@ const en = {
       experienceSummary: "Impact & Experience",
       caseStudies: "Case studies",
       productionProjects: "Production projects",
+      personalProjects: "AI projects",
       problemsSolved: "Problems we hit & how we fixed them",
       principles: "Engineering principles",
       howBuild: "How I build production backends",
