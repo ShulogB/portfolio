@@ -55,9 +55,11 @@ export type ProblemResolutionItem = {
 export type ProblemResolutionProjectGroup = {
   projectTitle: string;
   items: ProblemResolutionItem[];
+  /** Optional DOM id for deep-linking / scroll-to from a project card. */
+  anchor?: string;
 };
 
-/** Personal (non-production) project shown in its own grid. */
+/** Personal (non-production) project shown in its own grid (overview only). */
 export type PersonalProjectContent = {
   slug: string;
   title: string;
@@ -68,7 +70,8 @@ export type PersonalProjectContent = {
   tags: string[];
   /** Which simple flow diagram to render. */
   diagram: "ml" | "llm";
-  problems: ProblemResolutionItem[];
+  /** Anchor of this project's group in the "Problems we hit" section. */
+  problemsAnchor: string;
 };
 
 export type UILabels = {

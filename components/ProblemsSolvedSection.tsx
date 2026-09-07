@@ -12,7 +12,7 @@ export default function ProblemsSolvedSection() {
   return (
     <div className="space-y-10">
       {groups.map((g) => (
-        <div key={g.projectTitle}>
+        <div key={g.projectTitle} id={g.anchor} className={g.anchor ? "scroll-mt-24" : undefined}>
           {/* Project group separator */}
           <div className="flex items-center gap-3 mb-5">
             <div className="h-px flex-1 bg-sega-cyan/20" />

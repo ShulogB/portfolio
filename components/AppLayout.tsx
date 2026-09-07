@@ -117,6 +117,18 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
     [updateUrl]
   );
 
+  const handleViewProblems = useCallback(
+    (anchor: string) => {
+      setExpandedSection("problems");
+      updateUrl("problems", selectedCaseStudySlug);
+      setTimeout(() => {
+        const el = document.getElementById(anchor) ?? document.getElementById("problems");
+        el?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 250);
+    },
+    [selectedCaseStudySlug, updateUrl]
+  );
+
   const sidebarLabels = {
     name: content.hero.name,
     role: content.hero.sidebarRole,
@@ -158,7 +170,7 @@ export default function AppLayout({ caseStudiesForCarousel = [] }: AppLayoutProp
             isExpanded={expandedSection === "personal"}
             onHeaderClick={() => handleSectionClick("personal")}
           >
-            <PersonalProjectsSection />
+            <PersonalProjectsSection onViewDetails={handleViewProblems} />
           </CollapsibleSection>
           <CollapsibleSection
             id="problems"
